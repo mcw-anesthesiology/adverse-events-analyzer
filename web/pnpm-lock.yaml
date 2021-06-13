@@ -6,7 +6,6 @@ specifiers:
   '@wasm-tool/rollup-plugin-rust': ^1.0.6
   eslint: ^7.28.0
   eslint-plugin-svelte3: ^3.2.0
-  formee: ^1.0.0
   papaparse: ^5.3.1
   rollup: ^2.51.1
   rollup-plugin-css-only: ^3.1.0
@@ -18,7 +17,6 @@ specifiers:
   wasm-pack: ^0.9.1
 
 dependencies:
-  formee: 1.0.0
   papaparse: 5.3.1
   sirv-cli: 1.0.12
 
@@ -622,11 +620,6 @@ packages:
     dependencies:
       debug: 3.1.0
     dev: true
-
-  /formee/1.0.0:
-    resolution: {integrity: sha512-NMz3/yFDijQhjQbWjNvskhJB50ZQacVwHseT0c1TFNGKgLe9snWOcUncfnY6CpO3BcgJJ+EfOAfZtCsiXDEzag==}
-    engines: {node: '>=6'}
-    dev: false
 
   /fs-minipass/2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}

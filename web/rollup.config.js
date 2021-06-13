@@ -72,6 +72,7 @@ export default {
 		}),
 
 		rust({
+			debug: false,
 			serverPath: '/build/',
 			watchPatterns: ['../../**/*.rs']
 		}),
