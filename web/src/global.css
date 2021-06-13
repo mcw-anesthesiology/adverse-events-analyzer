@@ -1,0 +1,60 @@
+h2 {
+	color: var(--new-innov-blue, royalblue);
+	font-size: 2em;
+	margin-bottom: 0.5em;
+	font-weight: normal;
+}
+
+summary {
+	cursor: pointer;
+	list-style-position: outside;
+}
+
+details {
+	padding: 1em;
+}
+
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	margin: -1em;
+}
+
+.row > * {
+	flex-basis: 50%;
+	flex: 1 1;
+	margin: 1em;
+	min-width: 300px;
+	max-width: 100%;
+}
+
+label > input,
+label > select {
+	display: block;
+}
+
+label > input[type="checkbox"],
+label > input[type="radio"] {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.button-container {
+	flex-basis: 100%;
+	margin: 1em;
+	text-align: center;
+}
+
+.button-container > button {
+	display: inline-block;
+	margin: 0.5em;
+}
+
+.results {
+	margin: 1em;
+	text-align: center;
+}
+
+.results-controls {
+	margin-bottom: 1em;
+}

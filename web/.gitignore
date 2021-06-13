@@ -1,0 +1,7 @@
+/node_modules/
+/target/
+/public/build/
+
+.DS_Store
+
+.vercel
