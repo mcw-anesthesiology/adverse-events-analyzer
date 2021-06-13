@@ -1,4 +1,4 @@
-use mcw_anesth_adverse_events_analyzer::AdverseEvents;
+use mcw_anesth_adverse_events_analyzer::{AdverseEvents, AdverseEventsView};
 
 use std::{env, fs::File};
 
@@ -12,5 +12,9 @@ fn main() {
 
     let adverse_events = AdverseEvents::from_zip(file).unwrap();
 
-    dbg!(adverse_events.records.len());
+    let view: AdverseEventsView = adverse_events.view();
+
+    for (event, count) in view.event_counts() {
+        println!("{}: {}", event, count);
+    }
 }
