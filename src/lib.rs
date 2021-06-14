@@ -19,6 +19,12 @@ pub struct AdverseEvents {
 }
 
 impl AdverseEvents {
+    pub fn new() -> Self {
+        AdverseEvents {
+            records: Vec::new(),
+        }
+    }
+
     pub fn from_zip<R>(data: R) -> Result<Self, Error>
     where
         R: Read + Seek,
@@ -70,22 +76,24 @@ impl<'a> AdverseEventsView<'a> {
         counts
     }
 
-    pub fn between(self, start: NaiveDate, end: NaiveDate) -> Self {
+    pub fn between(&self, start: NaiveDate, end: NaiveDate) -> Self {
         Self {
             records: self
                 .records
-                .into_iter()
+                .iter()
                 .filter(|record| start <= record.date && record.date <= end)
+                .copied()
                 .collect(),
         }
     }
 
-    pub fn with_event(self, event: &str) -> Self {
+    pub fn with_event(&self, event: &str) -> Self {
         Self {
             records: self
                 .records
-                .into_iter()
+                .iter()
                 .filter(|record| record.adverse_events.iter().any(|e| e == event))
+                .copied()
                 .collect(),
         }
     }
@@ -103,45 +111,45 @@ where
 #[derive(Serialize, Deserialize)]
 pub struct AdverseEventRecord {
     #[serde(rename = "Date", deserialize_with = "mm_dd_yy_date::deserialize")]
-    date: NaiveDate,
+    pub date: NaiveDate,
     #[serde(rename = "MRN")]
-    mrn: String,
+    pub mrn: String,
     #[serde(rename = "Episode ID")]
-    episode_id: String,
+    pub episode_id: String,
     #[serde(rename = "Patient Name")]
-    patient_name: String,
+    pub patient_name: String,
     #[serde(rename = "Diagnosis")]
-    diagnosis: String,
+    pub diagnosis: String,
     #[serde(rename = "Procedure")]
-    procedure: String,
+    pub procedure: String,
     #[serde(rename = "Anesthesiologist")]
-    anesthesiologist: String,
+    pub anesthesiologist: String,
     #[serde(
         rename = "Anesthesia Staff",
         deserialize_with = "line_separated::deserialize"
     )]
-    anesthesia_staff: Vec<String>,
+    pub anesthesia_staff: Vec<String>,
     #[serde(rename = "Location")]
-    location: String,
+    pub location: String,
     #[serde(
         rename = "Adverse Events",
         deserialize_with = "comma_separated::deserialize"
     )]
-    adverse_events: Vec<String>,
+    pub adverse_events: Vec<String>,
     #[serde(rename = "ASA")]
-    asa: u8,
+    pub asa: u8,
 
     #[serde(rename = "An Start", deserialize_with = "hhmm_time::deserialize")]
-    an_start: NaiveTime,
+    pub an_start: NaiveTime,
     #[serde(rename = "An Stop", deserialize_with = "hhmm_time::deserialize")]
-    an_stop: NaiveTime,
+    pub an_stop: NaiveTime,
 
     #[serde(rename = "Smoker?", deserialize_with = "non_null_bool::deserialize")]
-    smoker: bool,
+    pub smoker: bool,
     #[serde(rename = "Age (Years)")]
-    age: u8,
+    pub age: u8,
     #[serde(rename = "BMI")]
-    bmi: f64,
+    pub bmi: f64,
 }
 
 impl FromCsv for AdverseEventRecord {}

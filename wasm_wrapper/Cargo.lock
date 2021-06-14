@@ -202,6 +202,8 @@ name = "mcw_anesth_adverse_events_wasm_wrapper"
 version = "0.1.0"
 dependencies = [
  "adverse-events",
+ "lazy_static",
+ "serde_json",
  "wasm-bindgen",
 ]
 
@@ -288,6 +290,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_json"
+version = "1.0.64"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "799e97dc9fdae36a5c8b8f2cae9ce2ee9fdce2058c57a93e6099d919fd982f79"
+dependencies = [
+ "itoa",
+ "ryu",
+ "serde",
 ]
 
 [[package]]
