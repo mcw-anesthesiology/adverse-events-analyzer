@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveTime};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use csv;
 use serde::{Deserialize, Serialize};
 use zip::{result::ZipError, ZipArchive};
@@ -13,6 +13,10 @@ use std::{
     fmt,
     io::{Read, Seek},
 };
+
+mod time_period;
+
+pub use time_period::*;
 
 pub struct AdverseEvents {
     pub records: Vec<AdverseEventRecord>,
@@ -64,6 +68,10 @@ impl<'a> From<&'a AdverseEvents> for AdverseEventsView<'a> {
 }
 
 impl<'a> AdverseEventsView<'a> {
+    pub fn len(&self) -> usize {
+        self.records.len()
+    }
+
     pub fn event_counts(&self) -> HashMap<&str, u32> {
         let mut counts: HashMap<&str, u32> = HashMap::new();
 
