@@ -8,7 +8,7 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-mcw-anesth-adverse-events-analyzer = { path = "../" }
+adverse-events = { path = "../" }
 wasm-bindgen = "0.2.67"
 
 [package.metadata.wasm-pack.profile.release]

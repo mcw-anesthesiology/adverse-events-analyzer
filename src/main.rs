@@ -1,4 +1,4 @@
-use mcw_anesth_adverse_events_analyzer::{AdverseEvents, AdverseEventsView};
+use adverse_events::{AdverseEvents, AdverseEventsView};
 
 use std::{env, fs::File};
 

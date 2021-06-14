@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use mcw_anesth_adverse_events_analyzer::AdverseEvents;
+use adverse_events::AdverseEvents;
 
 use std::io::{BufReader, Cursor};
 

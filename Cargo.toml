@@ -1,5 +1,5 @@
 [package]
-name = "mcw-anesth-adverse-events-analyzer"
+name = "adverse-events"
 version = "0.1.0"
 authors = ["Jacob Mischka <jacob@mischka.me>"]
 edition = "2018"
