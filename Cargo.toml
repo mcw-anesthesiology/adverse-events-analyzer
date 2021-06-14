@@ -11,6 +11,7 @@ chrono = { version = "0.4.19", features = ["serde"] }
 csv = "1.1.6"
 serde = { version = "1.0.126", features = ["derive"] }
 deserialize = { path = "../deserialize" }
+clap = "2.33.3"
 
 [dependencies.zip]
 version = "0.5.12"
