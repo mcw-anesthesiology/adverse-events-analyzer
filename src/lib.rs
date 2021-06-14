@@ -76,26 +76,53 @@ impl<'a> AdverseEventsView<'a> {
         counts
     }
 
+    pub fn with_any_event(&self) -> Self {
+        self.with_filter(|record| !record.adverse_events.is_empty())
+    }
+
     pub fn between(&self, start: NaiveDate, end: NaiveDate) -> Self {
-        Self {
-            records: self
-                .records
-                .iter()
-                .filter(|record| start <= record.date && record.date <= end)
-                .copied()
-                .collect(),
-        }
+        self.with_filter(|record| start <= record.date && record.date <= end)
+    }
+
+    pub fn between_times(&self, start: NaiveTime, end: NaiveTime) -> Self {
+        self.with_filter(|record| record.an_stop > start && record.an_start < end)
     }
 
     pub fn with_event(&self, event: &str) -> Self {
-        Self {
-            records: self
-                .records
+        self.with_filter(|record| record.adverse_events.iter().any(|e| e == event))
+    }
+
+    pub fn by_anesthesiologist(&self, anesthesiologist_name: &str) -> Self {
+        self.with_filter(|record| record.anesthesiologist == anesthesiologist_name)
+    }
+
+    pub fn with_staff(&self, staff_name: &str) -> Self {
+        self.with_filter(|record| {
+            record
+                .anesthesia_staff
                 .iter()
-                .filter(|record| record.adverse_events.iter().any(|e| e == event))
-                .copied()
-                .collect(),
+                .any(|name| name == staff_name)
+        })
+    }
+
+    pub fn with_procedure(&self, proc_name: &str) -> Self {
+        self.with_filter(|record| record.procedure == proc_name)
+    }
+
+    pub fn with_filter<F>(&self, filter: F) -> Self
+    where
+        F: FnMut(&&&AdverseEventRecord) -> bool,
+    {
+        Self {
+            records: self.records.iter().filter(filter).copied().collect(),
         }
+    }
+
+    pub fn count<F>(&self, count_if: F) -> usize
+    where
+        F: FnMut(&&&AdverseEventRecord) -> bool,
+    {
+        self.records.iter().filter(count_if).count()
     }
 }
 
