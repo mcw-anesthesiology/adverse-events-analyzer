@@ -1,5 +1,3 @@
-<svelte:options tag="mcw-anesth-adverse-events-analyzer" />
-
 <header>
 	<h1>Adverse events analyzer</h1>
 
