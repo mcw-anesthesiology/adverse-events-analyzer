@@ -4,45 +4,45 @@
 </header>
 
 <main>
-	<form on:submit={handleSubmit}>
-		<label>
-			Data
-			<input type="file" name="archive" accept=".zip" />
-		</label>
+	{#if dataLoaded}
+		<div>
+			{#if viewHandle != null}
+				{#if length != null}
+					<p>
+						Length: {length}
+					</p>
+				{/if}
 
-		<button type="submit">
-			Submit
-		</button>
+				<label>
+					<input type="checkbox" bind:checked={viewRecords} />
+					View records
+				</label>
 
-		{#if viewHandle != null}
-			{#if length != null}
-				<p>
-					Length: {length}
-				</p>
+				<button type="button" on:click={() => { viewHandle = filter(viewHandle); }}>
+					Filter
+				</button>
+
+				<button type="button" on:click={() => { resetFilter(viewHandle); }}>
+					Reset filter
+				</button>
+
+				{#if viewRecords}
+					<RecordsList {viewHandle} />
+				{/if}
 			{/if}
+		</div>
+	{:else}
+		<form on:submit={handleSubmit}>
+			<label>
+				Data
+				<input type="file" name="archive" accept=".zip" />
+			</label>
 
-			<button type="button" on:click={() => { viewHandle = filter(viewHandle); }}>
-				Filter
+			<button type="submit">
+				Submit
 			</button>
-
-			<button type="button" on:click={() => { getRecords(viewHandle); }}>
-				Get records
-			</button>
-
-			<button type="button" on:click={() => { resetFilter(viewHandle); }}>
-				Reset filter
-			</button>
-		{/if}
-
-
-		{#if records}
-			<ul>
-				{#each records as record}
-					<li><pre>{JSON.stringify(record)}</pre></li>
-				{/each}
-			</ul>
-		{/if}
-	</form>
+		</form>
+	{/if}
 </main>
 
 <footer>
@@ -53,20 +53,17 @@
 </footer>
 
 <script>
-	import { adverseEvents } from '../wasm-wrappers.js';
+	import RecordsList from './RecordsList.svelte';
+
+	import utils, { init } from '../wasm-wrapper.js';
 
 	import '../global.css';
 
-	let viewHandle;
-	let records;
-	let length;
+	let dataLoaded = false;
+	let viewRecords;
 
-	let utils;
-	const init = adverseEvents().then(
-		newUtils => {
-			utils = newUtils;
-		}
-	);
+	let viewHandle;
+	let length;
 
 	$: if (viewHandle != null) {
 		updateLength(viewHandle);
@@ -86,10 +83,7 @@
 		]);
 
 		viewHandle = utils.get_events(new Uint8Array(archiveBuf));
-	}
-
-	async function getRecords(handle) {
-		records = JSON.parse(utils.get_records(handle));
+		dataLoaded = true;
 	}
 
 	function filter(handle) {
