@@ -9,12 +9,12 @@ interface AdverseEventUtils {
 	get_events: (zipData: Uint8Array) => number;
 }
 
-// @ts-expect-error
+// @ts-ignore
 let utils: AdverseEventUtils = {};
 
 const init = initialize().then((initializedUtils: AdverseEventUtils) => {
 	for (const [key, val] of Object.entries(initializedUtils)) {
-		// @ts-expect-error
+		// @ts-ignore
 		utils[key] = val;
 	}
 
