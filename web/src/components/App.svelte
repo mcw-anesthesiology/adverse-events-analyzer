@@ -6,29 +6,8 @@
 <main>
 	{#if dataLoaded}
 		<div>
-			{#if viewHandle != null}
-				{#if length != null}
-					<p>
-						Length: {length}
-					</p>
-				{/if}
-
-				<label>
-					<input type="checkbox" bind:checked={viewRecords} />
-					View records
-				</label>
-
-				<button type="button" on:click={() => { viewHandle = filter(viewHandle); }}>
-					Filter
-				</button>
-
-				<button type="button" on:click={() => { resetFilter(viewHandle); }}>
-					Reset filter
-				</button>
-
-				{#if viewRecords}
-					<RecordsList {viewHandle} />
-				{/if}
+			{#if rootHandle != null}
+				<ViewFilter {rootHandle} />
 			{/if}
 		</div>
 	{:else}
@@ -53,46 +32,27 @@
 </footer>
 
 <script>
-	import RecordsList from './RecordsList.svelte';
+	import ViewFilter from './ViewFilter.svelte';
 
-	import utils, { init } from '../wasm-wrapper.js';
+	import { init } from '../wasm-wrapper.ts';
 
 	import '../global.css';
 
 	let dataLoaded = false;
-	let viewRecords;
 
-	let viewHandle;
-	let length;
-
-	$: if (viewHandle != null) {
-		updateLength(viewHandle);
-	}
-
-	async function updateLength(handle) {
-		length = utils.len(handle);
-	}
+	let rootHandle;
 
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		const archive = event.target.elements.archive.files[0];
-		const [_, archiveBuf] = await Promise.all([
+		const [utils, archiveBuf] = await Promise.all([
 			init,
 			archive.arrayBuffer()
 		]);
 
-		viewHandle = utils.get_events(new Uint8Array(archiveBuf));
+		rootHandle = utils.get_events(new Uint8Array(archiveBuf));
 		dataLoaded = true;
-	}
-
-	function filter(handle) {
-		const newHandle = utils.with_event(handle, "Corneal abrasion");
-		return newHandle;
-	}
-
-	async function resetFilter(handle) {
-		viewHandle = utils.release_view(handle);
 	}
 </script>
 

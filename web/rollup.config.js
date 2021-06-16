@@ -3,10 +3,12 @@
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import livereload from 'rollup-plugin-livereload';
 import rust from '@wasm-tool/rollup-plugin-rust';
 import { terser } from 'rollup-plugin-terser';
+import sveltePreprocess from 'svelte-preprocess';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -53,8 +55,11 @@ export default {
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production,
-			}
+			},
+			preprocess: sveltePreprocess(),
 		}),
+
+		typescript(),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
