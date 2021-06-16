@@ -38,8 +38,7 @@
 <script lang="ts">
 	import RecordsList from './RecordsList.svelte';
 
-	// @ts-ignore
-	import utils from '../wasm-wrapper.ts';
+	import { len, withEvent, releaseView } from '../wasm-wrapper.js';
 
 	export let rootHandle: number;
 	let viewRecords: boolean;
@@ -50,7 +49,7 @@
 	$: updateLength(currentHandle);
 
 	async function updateLength(handle: number) {
-		length = utils.len(handle);
+		length = await len(handle);
 	}
 
 	function isEventFilter(filter: Filter): filter is EventFilter {
@@ -79,9 +78,9 @@
 		currentHandle = filterObj.handle;
 	}
 
-	function addEventFilter(eventName: string) {
+	async function addEventFilter(eventName: string) {
 		try {
-			const handle = utils.with_event(currentHandle, eventName)
+			const handle = await withEvent(currentHandle, eventName)
 			const filterObj: EventFilter = {
 				type: FilterType.Event,
 				handle,
@@ -94,12 +93,12 @@
 		}
 	}
 
-	function popFilter() {
+	async function popFilter() {
 		if (!filterStack.length) return;
 
 		const removed = filterStack.pop();
 		filterStack = filterStack;
-		utils.release_view(removed.handle);
+		releaseView(removed.handle);
 
 		const lastIndex = filterStack.length - 1;
 		if (lastIndex < 0) {

@@ -34,7 +34,7 @@
 <script>
 	import ViewFilter from './ViewFilter.svelte';
 
-	import { init } from '../wasm-wrapper.ts';
+	import { init } from '../wasm-wrapper.js';
 
 	import '../global.css';
 

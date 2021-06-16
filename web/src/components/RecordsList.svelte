@@ -5,14 +5,14 @@
 </ol>
 
 <script>
-	import utils from '../wasm-wrapper.js';
+	import { getRecords } from '../wasm-wrapper.js';
 
 	export let viewHandle;
 	let records = [];
 
-	$: getRecords(viewHandle);
+	$: fetchRecords(viewHandle);
 
-	async function getRecords(handle) {
-		records = JSON.parse(utils.get_records(handle));
+	async function fetchRecords(handle) {
+		records = await getRecords(handle);
 	}
 </script>
