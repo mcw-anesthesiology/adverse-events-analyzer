@@ -16,6 +16,7 @@ specifiers:
   sirv-cli: ^1.0.12
   svelte: ^3.38.2
   svelte-check: ^2.1.0
+  svelte-frappe-charts: ^1.8.3
   svelte-preprocess: ^4.7.3
   tslib: ^2.3.0
   typescript: ^4.3.2
@@ -24,6 +25,7 @@ specifiers:
 dependencies:
   papaparse: 5.3.1
   sirv-cli: 1.0.12
+  svelte-frappe-charts: 1.8.3
 
 devDependencies:
   '@rollup/plugin-commonjs': 19.0.0_rollup@2.51.1
@@ -675,6 +677,10 @@ packages:
     dependencies:
       debug: 3.1.0
     dev: true
+
+  /frappe-charts/1.6.2:
+    resolution: {integrity: sha512-9TC3/+YVUi84yYoEbxFiSqu+1FQ5If/ydUNj6i8FRpwynd08t6a7RkS+IRJozAk6NfdL8/LVTTE1DUOjjKZZxg==}
+    dev: false
 
   /fs-minipass/2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
@@ -1347,6 +1353,13 @@ packages:
       - sugarss
     dev: true
 
+  /svelte-frappe-charts/1.8.3:
+    resolution: {integrity: sha512-FyLbNasp2WutIjYmE8sqZcQVcl8cbBB3eZcUB/c8ezkvISIrPXWg5aOkBWVwJXV5S+WbmPegAk7CZ+Ml9GvoKA==}
+    dependencies:
+      frappe-charts: 1.6.2
+      svelte: 3.38.2
+    dev: false
+
   /svelte-preprocess/4.7.3_svelte@3.38.2+typescript@4.3.2:
     resolution: {integrity: sha512-Zx1/xLeGOIBlZMGPRCaXtlMe4ZA0faato5Dc3CosEqwu75MIEPuOstdkH6cy+RYTUYynoxzNaDxkPX4DbrPwRA==}
     engines: {node: '>= 9.11.2'}
@@ -1399,7 +1412,6 @@ packages:
   /svelte/3.38.2:
     resolution: {integrity: sha512-q5Dq0/QHh4BLJyEVWGe7Cej5NWs040LWjMbicBGZ+3qpFWJ1YObRmUDZKbbovddLC9WW7THTj3kYbTOFmU9fbg==}
     engines: {node: '>= 8'}
-    dev: true
 
   /table/6.7.1:
     resolution: {integrity: sha512-ZGum47Yi6KOOFDE8m223td53ath2enHcYLgOCjGr5ngu8bdIARQk6mN/wRMv4yMRcHnCSnHbCEha4sobQx5yWg==}

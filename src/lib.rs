@@ -72,6 +72,22 @@ impl<'a> AdverseEventsView<'a> {
         self.records.len()
     }
 
+    pub fn date_range(&self) -> Option<(NaiveDate, NaiveDate)> {
+        // Using iterators would be more ergonomic but I want to avoid two iterations
+        if self.records.is_empty() {
+            None
+        } else {
+            let mut min: NaiveDate = self.records[0].date;
+            let mut max: NaiveDate = self.records[0].date;
+            for record in self.records.iter().skip(1) {
+                min = min.min(record.date);
+                max = max.max(record.date);
+            }
+
+            Some((min, max))
+        }
+    }
+
     pub fn event_counts(&self) -> HashMap<&str, u32> {
         let mut counts: HashMap<&str, u32> = HashMap::new();
 

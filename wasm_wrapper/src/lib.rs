@@ -1,12 +1,14 @@
+use chrono::NaiveDate;
 use lazy_static::lazy_static;
 use serde_json;
 use wasm_bindgen::prelude::*;
 
-use adverse_events::{AdverseEvents, AdverseEventsView};
+use adverse_events::{sort_map, AdverseEvents, AdverseEventsView};
 
 use std::{
     cell::{Cell, UnsafeCell},
     collections::HashMap,
+    convert::TryInto,
     io::{BufReader, Cursor},
     sync::Mutex,
 };
@@ -60,7 +62,7 @@ pub fn len(handle: u8) -> Result<u32, JsValue> {
 
     let view = map_cell
         .get_mut()
-        .get(&(handle as u8))
+        .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
     Ok(view.records.len() as u32)
 }
@@ -73,9 +75,9 @@ pub fn event_counts(handle: u8) -> Result<String, JsValue> {
 
     let view = map_cell
         .get_mut()
-        .get(&(handle as u8))
+        .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
-    let counts = view.event_counts();
+    let counts = sort_map(view.event_counts());
     serde_json::to_string(&counts).map_err(|_| JsValue::from_str("failed serializing counts"))
 }
 
@@ -87,7 +89,7 @@ pub fn with_event(handle: u8, event: &str) -> Result<u8, JsValue> {
 
     let map = map_cell.get_mut();
     let view = map
-        .get(&(handle as u8))
+        .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
 
     let new_view = view.with_event(event);
@@ -125,8 +127,32 @@ pub fn get_records(handle: u8) -> Result<String, JsValue> {
 
     let view = map_cell
         .get_mut()
-        .get(&(handle as u8))
+        .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
+
     serde_json::to_string(&view.records)
         .map_err(|_| JsValue::from_str("failed serializing records"))
+}
+
+#[wasm_bindgen]
+pub fn date_range(handle: u8) -> Result<Box<[i32]>, JsValue> {
+    let mut map_cell = VIEW_MAP
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire views"))?;
+
+    let view = map_cell
+        .get_mut()
+        .get(&handle)
+        .ok_or(JsValue::from_str("no view found for handle"))?;
+
+    let (start, end) = view.date_range().ok_or(JsValue::from_str("no dates"))?;
+
+    Ok(Box::new([to_timestamp(start)?, to_timestamp(end)?]))
+}
+
+fn to_timestamp(date: NaiveDate) -> Result<i32, JsValue> {
+    date.and_hms(0, 0, 0)
+        .timestamp()
+        .try_into()
+        .map_err(|_| JsValue::from_str("out of range timestamp"))
 }

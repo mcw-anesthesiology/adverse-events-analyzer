@@ -202,6 +202,7 @@ name = "mcw_anesth_adverse_events_wasm_wrapper"
 version = "0.1.0"
 dependencies = [
  "adverse-events",
+ "chrono",
  "lazy_static",
  "serde_json",
  "wasm-bindgen",

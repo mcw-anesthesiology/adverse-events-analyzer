@@ -3,6 +3,12 @@
 		Length: {length}
 	</p>
 
+	{#if start && end}
+		<p>
+			<DateRange {start} {end} />
+		</p>
+	{/if}
+
 	<div class="filter-breadcrumbs">
 		{#each filterStack as filter}
 			{#if isEventFilter(filter)}
@@ -33,23 +39,36 @@
 	{#if viewRecords}
 		<RecordsList viewHandle={currentHandle} />
 	{/if}
+
+	<EventCounts viewHandle={currentHandle} />
 </div>
 
-<script lang="ts">
+<script lang="typescript">
+	import DateRange from './DateRange.svelte';
+	import EventCounts from './EventCounts.svelte';
 	import RecordsList from './RecordsList.svelte';
 
-	import { len, withEvent, releaseView } from '../wasm-wrapper.js';
+	import { dateRange, len, withEvent, releaseView } from '../wasm-wrapper.js';
 
 	export let rootHandle: number;
 	let viewRecords: boolean;
 
 
 	let length: number = 0;
+	let start: Date;
+	let end: Date;
 
 	$: updateLength(currentHandle);
+	$: updateDates(currentHandle);
 
 	async function updateLength(handle: number) {
 		length = await len(handle);
+	}
+
+	async function updateDates(handle: number) {
+		const [s, e] = await dateRange(handle);
+		start = s;
+		end = e;
 	}
 
 	function isEventFilter(filter: Filter): filter is EventFilter {
