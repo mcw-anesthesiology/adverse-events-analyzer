@@ -3,9 +3,9 @@
 		Length: {length}
 	</p>
 
-	{#if start && end}
+	{#if earliest && latest}
 		<p>
-			<DateRange {start} {end} />
+			<DateRange start={earliest} end={latest} />
 		</p>
 	{/if}
 
@@ -15,11 +15,17 @@
 				<span class="event-filter">
 					Name: {filter.eventName}
 				</span>
+			{:else if isDateFilter(filter)}
+				<span class="event-filter">
+					<DateRange start={filter.startDate} end={filter.endDate} />
+				</span>
 			{/if}
 		{/each}
 	</div>
 
 	<form>
+		<DateRangePicker bind:startDate bind:endDate />
+
 		<label>
 			<input type="checkbox" bind:checked={viewRecords} />
 			View records
@@ -44,22 +50,35 @@
 </div>
 
 <script lang="typescript">
+	import { setContext } from 'svelte';
+
 	import DateRange from './DateRange.svelte';
+	import DateRangePicker from './DateRangePicker.svelte';
 	import EventCounts from './EventCounts.svelte';
 	import RecordsList from './RecordsList.svelte';
 
-	import { dateRange, len, withEvent, releaseView } from '../wasm-wrapper.js';
+	import { between, dateRange, len, withEvent, releaseView } from '../wasm-wrapper.js';
+	import { getDate } from '../date-utils.js';
 
 	export let rootHandle: number;
 	let viewRecords: boolean;
 
+	let startDate: Date;
+	let endDate: Date;
+
 
 	let length: number = 0;
-	let start: Date;
-	let end: Date;
+	let earliest: Date;
+	let latest: Date;
 
 	$: updateLength(currentHandle);
 	$: updateDates(currentHandle);
+	$: if (startDate && endDate) {
+		updateDateFilter(
+			getDate(startDate),
+			getDate(endDate)
+		);
+	}
 
 	async function updateLength(handle: number) {
 		length = await len(handle);
@@ -67,16 +86,17 @@
 
 	async function updateDates(handle: number) {
 		const [s, e] = await dateRange(handle);
-		start = s;
-		end = e;
+		earliest = s;
+		latest = e;
 	}
 
-	function isEventFilter(filter: Filter): filter is EventFilter {
-		return filter.type === FilterType.Event;
+	async function updateDateFilter(start: Date, end: Date) {
+		return addDateFilter(start, end);
 	}
 
 	enum FilterType {
-		Event = 'event'
+		Event = 'event',
+		Date = 'date',
 	}
 
 	interface Filter {
@@ -88,27 +108,65 @@
 		eventName: string;
 	}
 
+	interface DateFilter extends Filter {
+		startDate: Date;
+		endDate: Date;
+	}
+
+	function isEventFilter(filter: Filter): filter is EventFilter {
+		return filter.type === FilterType.Event;
+	}
+
+	function isDateFilter(filter: Filter): filter is DateFilter {
+		return filter.type === FilterType.Date;
+	}
+
+
 	let filterStack: Filter[] = [];
 	let currentHandle: number = rootHandle;
 
-	function addFilter(filterObj: Filter) {
-		filterStack.push(filterObj);
+	function addFilter(filter: Filter) {
+		filterStack.push(filter);
 		filterStack = filterStack;
-		currentHandle = filterObj.handle;
+		currentHandle = filter.handle;
 	}
 
 	async function addEventFilter(eventName: string) {
 		try {
-			const handle = await withEvent(currentHandle, eventName)
-			const filterObj: EventFilter = {
+			const handle = await withEvent(currentHandle, eventName);
+			const filter: EventFilter = {
 				type: FilterType.Event,
 				handle,
 				eventName
-			}
+			};
 
-			addFilter(filterObj)
+			addFilter(filter);
 		} catch (err) {
 			console.error(err);
+		}
+	}
+
+	async function addDateFilter(startDate: Date, endDate: Date) {
+		try {
+			const handle = await between(currentHandle, startDate, endDate);
+			const filter: DateFilter = {
+				type: FilterType.Date,
+				handle,
+				startDate,
+				endDate
+			};
+
+			addFilter(filter);
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	async function replayFilter(filter: Filter) {
+		if (isDateFilter(filter)) {
+			addDateFilter(filter.startDate, filter.endDate);
+		} else if (isEventFilter(filter)) {
+			addEventFilter(filter.eventName);
 		}
 	}
 
@@ -126,4 +184,10 @@
 			currentHandle = filterStack[lastIndex].handle;
 		}
 	}
+
+	setContext('filter', {
+		addEventFilter,
+		addDateFilter,
+		popFilter,
+	});
 </script>

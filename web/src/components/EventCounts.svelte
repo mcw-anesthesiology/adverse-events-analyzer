@@ -12,7 +12,11 @@
 		<tbody>
 			{#each Array.from(counts.entries()) as [event, count]}
 				<tr>
-					<th>{event}</th>
+					<th>
+						<a href="#" on:click={handleEventClick}>
+							{event}
+						</a>
+					</th>
 					<td>{count}</td>
 				</tr>
 			{/each}
@@ -21,6 +25,7 @@
 </div>
 
 <script lang="typescript">
+	import { getContext } from 'svelte';
 	import Chart from 'svelte-frappe-charts';
 
 	import { eventCounts } from '../wasm-wrapper.js';
@@ -49,4 +54,14 @@
 		counts = await eventCounts(handle);
 	}
 
+	const { addEventFilter } = getContext('filter');
+
+	async function handleEventClick(event: Event) {
+		event.preventDefault();
+
+		const th = event.target as HTMLTableHeaderCellElement;
+		const eventName = th.textContent.trim();
+
+		return addEventFilter(eventName);
+	}
 </script>

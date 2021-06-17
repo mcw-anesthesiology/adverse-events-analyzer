@@ -5,7 +5,7 @@
 // @ts-ignore
 import initialize from '../../wasm_wrapper/Cargo.toml';
 
-import { fromLocalSecondsTimestamp } from './date-utils.js';
+import { fromLocalSecondsTimestamp, toLocalSecondsTimestamp } from './date-utils.js';
 
 interface AdverseEventRecord {
 	date: string;
@@ -31,6 +31,7 @@ interface AdverseEventUtils {
 	len: (handle: number) => number;
 	event_counts: (handle: number) => string;
 	with_event: (handle: number, event: string) => number;
+	between: (handle: number, start: number, end: number) => number;
 	release_view: (handle: number) => number;
 	get_records: (handle: number) => string;
 	date_range: (handle: number) => Int32Array;
@@ -68,6 +69,16 @@ export async function eventCounts(handle: number): Promise<Map<string, number>> 
 export async function withEvent(handle: number, event: string): Promise<number> {
 	const utils = await init;
 	return utils.with_event(handle, event);
+}
+
+export async function between(handle: number, start: Date, end: Date): Promise<number> {
+	const utils = await init;
+
+	return utils.between(
+		handle,
+		toLocalSecondsTimestamp(start),
+		toLocalSecondsTimestamp(end)
+	);
 }
 
 export async function releaseView(handle: number): Promise<number> {

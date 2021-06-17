@@ -1,4 +1,4 @@
-use chrono::NaiveDate;
+use chrono::{Local, NaiveDate, TimeZone};
 use lazy_static::lazy_static;
 use serde_json;
 use wasm_bindgen::prelude::*;
@@ -13,16 +13,18 @@ use std::{
     sync::Mutex,
 };
 
+type ViewHandle = u8;
+
 lazy_static! {
     static ref RECORDS: Mutex<UnsafeCell<AdverseEvents>> =
         Mutex::new(UnsafeCell::new(AdverseEvents::new()));
-    static ref VIEW_MAP: Mutex<UnsafeCell<HashMap<u8, AdverseEventsView<'static>>>> =
+    static ref VIEW_MAP: Mutex<UnsafeCell<HashMap<ViewHandle, AdverseEventsView<'static>>>> =
         Mutex::new(UnsafeCell::new(HashMap::new()));
-    static ref NEXT_HANDLE: Mutex<Cell<u8>> = Mutex::new(Cell::new(0));
+    static ref NEXT_HANDLE: Mutex<Cell<ViewHandle>> = Mutex::new(Cell::new(0));
 }
 
 #[wasm_bindgen]
-pub fn get_events(zip_data: &[u8]) -> Result<u8, JsValue> {
+pub fn get_events(zip_data: &[ViewHandle]) -> Result<ViewHandle, JsValue> {
     let cursor = Cursor::new(zip_data);
     let buf = BufReader::new(cursor);
     let adverse_events =
@@ -55,7 +57,7 @@ pub fn get_events(zip_data: &[u8]) -> Result<u8, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn len(handle: u8) -> Result<u32, JsValue> {
+pub fn len(handle: ViewHandle) -> Result<u32, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -68,7 +70,7 @@ pub fn len(handle: u8) -> Result<u32, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn event_counts(handle: u8) -> Result<String, JsValue> {
+pub fn event_counts(handle: ViewHandle) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -82,7 +84,7 @@ pub fn event_counts(handle: u8) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn with_event(handle: u8, event: &str) -> Result<u8, JsValue> {
+pub fn with_event(handle: ViewHandle, event: &str) -> Result<ViewHandle, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not aquire views"))?;
@@ -97,7 +99,7 @@ pub fn with_event(handle: u8, event: &str) -> Result<u8, JsValue> {
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire next handle"))?;
     let next_handle = next_handle_lock.get_mut();
-    let handle: u8 = *next_handle;
+    let handle: ViewHandle = *next_handle;
     map.insert(handle, new_view);
     *next_handle += 1;
 
@@ -105,7 +107,43 @@ pub fn with_event(handle: u8, event: &str) -> Result<u8, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn release_view(handle: u8) -> Result<u8, JsValue> {
+pub fn between(
+    handle: ViewHandle,
+    start_timestamp: i32,
+    end_timestamp: i32,
+) -> Result<ViewHandle, JsValue> {
+    let mut map_cell = VIEW_MAP
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire views"))?;
+    let map = map_cell.get_mut();
+
+    let view = map
+        .get(&handle)
+        .ok_or(JsValue::from_str("no view found for handle"))?;
+
+    let start = Local
+        .timestamp(start_timestamp.into(), 0)
+        .naive_local()
+        .date();
+    let end = Local
+        .timestamp(end_timestamp.into(), 0)
+        .naive_local()
+        .date();
+
+    let new_view = view.between(start, end);
+    let mut next_handle_lock = NEXT_HANDLE
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire next handle"))?;
+    let next_handle = next_handle_lock.get_mut();
+    let handle: ViewHandle = *next_handle;
+    map.insert(handle, new_view);
+    *next_handle += 1;
+
+    Ok(handle)
+}
+
+#[wasm_bindgen]
+pub fn release_view(handle: ViewHandle) -> Result<ViewHandle, JsValue> {
     if handle == 0 {
         Err(JsValue::from_str("cannot release base view"))
     } else {
@@ -120,7 +158,7 @@ pub fn release_view(handle: u8) -> Result<u8, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn get_records(handle: u8) -> Result<String, JsValue> {
+pub fn get_records(handle: ViewHandle) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -135,7 +173,7 @@ pub fn get_records(handle: u8) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn date_range(handle: u8) -> Result<Box<[i32]>, JsValue> {
+pub fn date_range(handle: ViewHandle) -> Result<Box<[i32]>, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;

@@ -6,16 +6,15 @@ export function toISODate(d: Date) {
 export function yearBlockStarts(date = new Date()) {
 	const blocks = [];
 
-	let year = date.getMonth() >= JULY
-		? date.getFullYear()
-		: date.getFullYear() - 1;
+	let year =
+		date.getMonth() >= JULY ? date.getFullYear() : date.getFullYear() - 1;
 
 	let d = new Date(year, JULY, 1);
 	blocks.push(new Date(d));
 	d.setDate(d.getDate() + 28);
 
 	// Set next block start to Monday, first block is <= 4 weeks
-	d.setDate((d.getDate() - d.getDay()) + 1);
+	d.setDate(d.getDate() - d.getDay() + 1);
 	blocks.push(new Date(d));
 
 	for (let i = 0; i < 11; i++) {
@@ -30,19 +29,24 @@ const JULY = 6;
 
 export type Datelike = Date | string;
 
-export function getDate(date: Datelike): Date {
+export function getDate(date: Datelike): Date | undefined {
 	if (date instanceof Date) return date;
 
-	return parseDate(date) ?? new Date();
+	return date.includes(' ') ? parseDateTime(date) : parseDate(date);
 }
 
 export function parseDate(dateString: string): Date | undefined {
-	return dateString.indexOf('T') === -1
-		? parseJSDate(dateString)
-		: parseBackendDate(dateString);
+	try {
+		const [year, month, day] = dateString.split('-').map(Number);
+		return new Date(year, month - 1, day);
+	} catch (err) {
+		console.error(err);
+	}
+
+	return undefined;
 }
 
-export function parseJSDate(dateString: string): Date | undefined {
+export function parseDateTime(dateString: string): Date | undefined {
 	try {
 		const [date, time] = dateString.split(' ');
 		const [year, month, day] = date.split('-').map(Number);
@@ -97,9 +101,18 @@ export function getAcademicYear(d: Date): [Date, Date] {
 	return [start, end];
 }
 
-export const timezoneOffsetMinutes = (new Date()).getTimezoneOffset();
-export const timezoneOffsetMillis = timezoneOffsetMinutes * 60 * 1000;
+export const timezoneOffsetMinutes = new Date().getTimezoneOffset();
+export const timezoneOffsetSeconds = timezoneOffsetMinutes * 60;
+export const timezoneOffsetMillis = timezoneOffsetSeconds * 1000;
 
 export function fromLocalSecondsTimestamp(seconds: number): Date {
 	return new Date(seconds * 1000 + timezoneOffsetMillis);
+}
+
+export function toUtcSecondsTimestamp(date: Date): number {
+	return date.valueOf() / 1000;
+}
+
+export function toLocalSecondsTimestamp(date: Date): number {
+	return toUtcSecondsTimestamp(date) - timezoneOffsetSeconds;
 }
