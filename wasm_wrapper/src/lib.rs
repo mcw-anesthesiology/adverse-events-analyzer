@@ -3,13 +3,16 @@ use lazy_static::lazy_static;
 use serde_json;
 use wasm_bindgen::prelude::*;
 
-use adverse_events::{sort_map, AdverseEvents, AdverseEventsView};
+use adverse_events::{
+    sort_map, AdverseEvents, AdverseEventsView, Error as AdverseEventsError, Period,
+};
 
 use std::{
     cell::{Cell, UnsafeCell},
     collections::HashMap,
-    convert::TryInto,
+    convert::{From, TryInto},
     io::{BufReader, Cursor},
+    str::FromStr,
     sync::Mutex,
 };
 
@@ -188,9 +191,45 @@ pub fn date_range(handle: ViewHandle) -> Result<Box<[i32]>, JsValue> {
     Ok(Box::new([to_timestamp(start)?, to_timestamp(end)?]))
 }
 
+pub fn period_counts(handle: ViewHandle, period: &str) -> Result<String, JsValue> {
+    let mut map_cell = VIEW_MAP
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire views"))?;
+
+    let view = map_cell
+        .get_mut()
+        .get(&handle)
+        .ok_or(JsValue::from_str("no view found for handle"))?;
+
+    let period = Period::from_str(period).map_err(|_| JsValue::from_str("invalid period"))?;
+
+    let view_counts = view.by_period(period);
+    let period_counts: Vec<_> = view_counts.into_iter().map(|vc| vc.to_count()).collect();
+    serde_json::to_string(&period_counts)
+        .map_err(|_| JsValue::from_str("failed serializing view counts"))
+}
+
 fn to_timestamp(date: NaiveDate) -> Result<i32, JsValue> {
     date.and_hms(0, 0, 0)
         .timestamp()
         .try_into()
         .map_err(|_| JsValue::from_str("out of range timestamp"))
+}
+
+#[derive(Debug)]
+pub enum Error {
+    AdverseEventsError(AdverseEventsError),
+}
+
+impl From<AdverseEventsError> for Error {
+    fn from(e: AdverseEventsError) -> Self {
+        Error::AdverseEventsError(e)
+    }
+}
+
+impl From<Error> for JsValue {
+    fn from(e: Error) -> JsValue {
+        // FIXME: Improve this
+        JsValue::from_str(&format!("{:?}", e))
+    }
 }

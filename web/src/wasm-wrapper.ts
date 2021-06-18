@@ -5,9 +5,13 @@
 // @ts-ignore
 import initialize from '../../wasm_wrapper/Cargo.toml';
 
-import { fromLocalSecondsTimestamp, toLocalSecondsTimestamp } from './date-utils.js';
+import {
+	parseDate,
+	fromLocalSecondsTimestamp,
+	toLocalSecondsTimestamp,
+} from './date-utils.js';
 
-interface AdverseEventRecord {
+export interface AdverseEventRecord {
 	date: string;
 	mrn: string;
 	episodeId: string;
@@ -26,7 +30,7 @@ interface AdverseEventRecord {
 	bmi: number;
 }
 
-interface AdverseEventUtils {
+export interface AdverseEventUtils {
 	get_events: (zipData: Uint8Array) => number;
 	len: (handle: number) => number;
 	event_counts: (handle: number) => string;
@@ -35,19 +39,22 @@ interface AdverseEventUtils {
 	release_view: (handle: number) => number;
 	get_records: (handle: number) => string;
 	date_range: (handle: number) => Int32Array;
+	period_counts: (handle: number, period: string) => string;
 }
 
 // @ts-ignore
-let utils: AdverseEventUtils = ({} as AdverseEventUtils);
+let utils: AdverseEventUtils = {} as AdverseEventUtils;
 
-const init: Promise<AdverseEventUtils> = initialize().then((initializedUtils: AdverseEventUtils) => {
-	for (const [key, val] of Object.entries(initializedUtils)) {
-		// @ts-ignore
-		utils[key] = val;
+const init: Promise<AdverseEventUtils> = initialize().then(
+	(initializedUtils: AdverseEventUtils) => {
+		for (const [key, val] of Object.entries(initializedUtils)) {
+			// @ts-ignore
+			utils[key] = val;
+		}
+
+		return utils;
 	}
-
-	return utils;
-});
+);
 
 export { initialize, init };
 
@@ -61,17 +68,26 @@ export async function len(handle: number): Promise<number> {
 	return utils.len(handle);
 }
 
-export async function eventCounts(handle: number): Promise<Map<string, number>> {
+export async function eventCounts(
+	handle: number
+): Promise<Map<string, number>> {
 	const utils = await init;
 	return new Map(JSON.parse(utils.event_counts(handle)));
 }
 
-export async function withEvent(handle: number, event: string): Promise<number> {
+export async function withEvent(
+	handle: number,
+	event: string
+): Promise<number> {
 	const utils = await init;
 	return utils.with_event(handle, event);
 }
 
-export async function between(handle: number, start: Date, end: Date): Promise<number> {
+export async function between(
+	handle: number,
+	start: Date,
+	end: Date
+): Promise<number> {
 	const utils = await init;
 
 	return utils.between(
@@ -86,7 +102,9 @@ export async function releaseView(handle: number): Promise<number> {
 	return utils.release_view(handle);
 }
 
-export async function getRecords(handle: number): Promise<AdverseEventRecord[]> {
+export async function getRecords(
+	handle: number
+): Promise<AdverseEventRecord[]> {
 	const utils = await init;
 	return JSON.parse(utils.get_records(handle));
 }
@@ -99,6 +117,41 @@ export async function dateRange(handle: number): Promise<[Date, Date]> {
 		fromLocalSecondsTimestamp(startTimestamp),
 		fromLocalSecondsTimestamp(endTimestamp),
 	];
+}
+
+export enum Period {
+	Day = 'day',
+	Week = 'week',
+	Month = 'month',
+	Year = 'year',
+}
+
+interface StringDatePeriodCount {
+	start: string;
+	end: string;
+	value: number;
+}
+
+export interface DatePeriodCount {
+	start: Date;
+	end: Date;
+	value: number;
+}
+
+export async function periodCounts(
+	handle: number,
+	period: Period
+): Promise<DatePeriodCount[]> {
+	const utils = await init;
+	const counts = utils.period_counts(handle, period.toString());
+
+	return JSON.parse(counts).map((count: StringDatePeriodCount) => {
+		return {
+			start: parseDate(count.start),
+			end: parseDate(count.end),
+			value: count.value,
+		};
+	});
 }
 
 export default utils;

@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{Datelike, Duration, NaiveDate, NaiveTime, Weekday};
 use csv;
 use serde::{Deserialize, Serialize};
 use zip::{result::ZipError, ZipArchive};
@@ -10,7 +10,7 @@ use deserialize::{
 use std::{
     collections::HashMap,
     convert::From,
-    fmt,
+    fmt, hash,
     io::{Read, Seek},
 };
 
@@ -55,6 +55,7 @@ impl AdverseEvents {
     }
 }
 
+#[derive(Serialize)]
 pub struct AdverseEventsView<'a> {
     pub records: Vec<&'a AdverseEventRecord>,
 }
@@ -148,6 +149,71 @@ impl<'a> AdverseEventsView<'a> {
     {
         self.records.iter().filter(count_if).count()
     }
+
+    pub fn by_period(&self, period: Period) -> Vec<DatePeriodView<'a>> {
+        match period {
+            Period::Day => {
+                let by_date = group_by_owned(self.records.iter().copied(), |record| record.date);
+                by_date
+                    .into_iter()
+                    .map(|(date, records)| DatePeriodView {
+                        start: date,
+                        end: date,
+                        value: { AdverseEventsView { records } },
+                    })
+                    .collect()
+            }
+            Period::Week => {
+                let by_week = group_by_owned(self.records.iter().copied(), |record| {
+                    (record.date.year(), record.date.iso_week().week())
+                });
+
+                by_week
+                    .into_iter()
+                    .map(|((year, week), records)| DatePeriodView {
+                        start: NaiveDate::from_isoywd(year, week, Weekday::Mon),
+                        end: NaiveDate::from_isoywd(year, week, Weekday::Sun),
+                        value: AdverseEventsView { records },
+                    })
+                    .collect()
+            }
+            Period::Month => {
+                let by_month = group_by_owned(self.records.iter().copied(), |record| {
+                    (record.date.year(), record.date.month())
+                });
+
+                by_month
+                    .into_iter()
+                    .map(|((year, month), records)| {
+                        let (next_year, next_month) = if month == 12 {
+                            (year + 1, 1)
+                        } else {
+                            (year, month + 1)
+                        };
+
+                        DatePeriodView {
+                            start: NaiveDate::from_ymd(year, month, 1),
+                            end: NaiveDate::from_ymd(next_year, next_month, 1) - Duration::days(1),
+                            value: AdverseEventsView { records },
+                        }
+                    })
+                    .collect()
+            }
+            Period::Year => {
+                let by_year =
+                    group_by_owned(self.records.iter().copied(), |record| record.date.year());
+
+                by_year
+                    .into_iter()
+                    .map(|(year, records)| DatePeriodView {
+                        start: NaiveDate::from_ymd(year, 1, 1),
+                        end: NaiveDate::from_ymd(year, 12, 31),
+                        value: AdverseEventsView { records },
+                    })
+                    .collect()
+            }
+        }
+    }
 }
 
 pub fn sort_map<K, V>(map: HashMap<K, V>) -> Vec<(K, V)>
@@ -157,6 +223,40 @@ where
     let mut v: Vec<_> = map.into_iter().collect();
     v.sort_by(|a, b| (a.0).cmp(&b.0));
     v
+}
+
+pub fn group_by<'a, F, K, T>(
+    items: impl IntoIterator<Item = &'a T>,
+    grouper: F,
+) -> HashMap<&'a K, Vec<&'a T>>
+where
+    F: Fn(&T) -> &K,
+    K: Eq + hash::Hash,
+{
+    let mut map: HashMap<&K, Vec<&T>> = HashMap::new();
+
+    for item in items {
+        map.entry(grouper(item)).or_default().push(item)
+    }
+
+    map
+}
+
+pub fn group_by_owned<'a, F, K, T>(
+    items: impl IntoIterator<Item = &'a T>,
+    grouper: F,
+) -> HashMap<K, Vec<&'a T>>
+where
+    F: Fn(&T) -> K,
+    K: Eq + hash::Hash,
+{
+    let mut map: HashMap<K, Vec<&T>> = HashMap::new();
+
+    for item in items {
+        map.entry(grouper(item)).or_default().push(item)
+    }
+
+    map
 }
 
 #[derive(Serialize, Deserialize)]
