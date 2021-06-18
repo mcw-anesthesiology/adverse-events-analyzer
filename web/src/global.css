@@ -1,5 +1,12 @@
 :root {
 	--bar-color: var(--mcw-anesth-light-green, royalblue);
+	--border-color: #ccc;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
 }
 
 summary {
@@ -63,7 +70,7 @@ table {
 th,
 td {
 	padding: 0.25em 0.5em;
-	border: 1px dotted #ccc;
+	border: 1px dotted var(--border-color);
 }
 
 th {

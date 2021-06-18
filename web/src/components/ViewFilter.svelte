@@ -1,27 +1,45 @@
 <div class="view-filter">
-	<p>
-		Length: {length}
-	</p>
 
-	{#if earliest && latest}
-		<p>
-			<DateRange start={earliest} end={latest} />
-		</p>
-	{/if}
+	<section class="filters">
+		{#if filterStack.length > 0}
+			<h4>Filters</h4>
 
-	<div class="filter-breadcrumbs">
-		{#each filterStack as filter}
-			{#if isEventFilter(filter)}
-				<span class="event-filter">
-					Name: {filter.eventName}
-				</span>
-			{:else if isDateFilter(filter)}
-				<span class="event-filter">
-					<DateRange start={filter.startDate} end={filter.endDate} />
-				</span>
+			<div class="filter-breadcrumbs">
+				{#each filterStack as filter}
+					{#if isEventFilter(filter)}
+						<span class="event-filter">
+							Event: {filter.eventName}
+						</span>
+					{:else if isDateFilter(filter)}
+						<span class="event-filter">
+							Between:
+							<DateRange start={filter.startDate} end={filter.endDate} />
+						</span>
+					{/if}
+				{/each}
+			</div>
+
+			<div class="back-container">
+				<a href="#" class:disabled={!filterStack.length} on:click|preventDefault={popFilter}>
+					← Remove filter
+				</a>
+			</div>
+		{/if}
+	</section>
+
+
+	<aside class="meta">
+		<span>
+			{length} records
+		</span>
+
+		<span>
+			{#if earliest && latest}
+				<DateRange start={earliest} end={latest} />
 			{/if}
-		{/each}
-	</div>
+		</span>
+	</aside>
+
 
 	<form>
 		<DateRangePicker bind:startDate bind:endDate />
@@ -29,17 +47,13 @@
 		<label>
 			<input type="checkbox" bind:checked={viewRecords} />
 			View records
+			{#if length > 1000}
+				<small>
+					<b>Warning:</b> viewing many records at once may take a
+					long time to load or freeze the window.
+				</small>
+			{/if}
 		</label>
-
-		<button type="button" on:click={() => {
-			addEventFilter('Corneal abrasion');
-		}}>
-			Filter
-		</button>
-
-		<button type="button" on:click={popFilter}>
-			Remove filter
-		</button>
 	</form>
 
 	{#if viewRecords}
@@ -162,14 +176,6 @@
 		}
 	}
 
-	async function replayFilter(filter: Filter) {
-		if (isDateFilter(filter)) {
-			addDateFilter(filter.startDate, filter.endDate);
-		} else if (isEventFilter(filter)) {
-			addEventFilter(filter.eventName);
-		}
-	}
-
 	async function popFilter() {
 		if (!filterStack.length) return;
 
@@ -191,3 +197,28 @@
 		popFilter,
 	});
 </script>
+
+<style>
+	.filters {
+		min-height: 6em;
+		margin-bottom: 1em;
+	}
+
+	h4 {
+		margin: 0;
+	}
+
+	.filter-breadcrumbs {
+		font-size: 0.9em;
+		display: flex;
+		min-height: 2em;
+	}
+
+	.filter-breadcrumbs > span {
+		margin: 0.5em;
+		padding: 0.25em 0.5em;
+		border: 1px solid var(--border-color);
+		border-radius: 2px;
+		background-color: #fafafa;
+	}
+</style>
