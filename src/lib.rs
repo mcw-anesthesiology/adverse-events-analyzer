@@ -160,46 +160,59 @@ where
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all(serialize = "camelCase"))]
 pub struct AdverseEventRecord {
-    #[serde(rename = "Date", deserialize_with = "mm_dd_yy_date::deserialize")]
+    #[serde(
+        rename(deserialize = "Date"),
+        deserialize_with = "mm_dd_yy_date::deserialize"
+    )]
     pub date: NaiveDate,
-    #[serde(rename = "MRN")]
+    #[serde(rename(deserialize = "MRN"))]
     pub mrn: String,
-    #[serde(rename = "Episode ID")]
+    #[serde(rename(deserialize = "Episode ID"))]
     pub episode_id: String,
-    #[serde(rename = "Patient Name")]
+    #[serde(rename(deserialize = "Patient Name"))]
     pub patient_name: String,
-    #[serde(rename = "Diagnosis")]
+    #[serde(rename(deserialize = "Diagnosis"))]
     pub diagnosis: String,
-    #[serde(rename = "Procedure")]
+    #[serde(rename(deserialize = "Procedure"))]
     pub procedure: String,
-    #[serde(rename = "Anesthesiologist")]
+    #[serde(rename(deserialize = "Anesthesiologist"))]
     pub anesthesiologist: String,
     #[serde(
-        rename = "Anesthesia Staff",
+        rename(deserialize = "Anesthesia Staff"),
         deserialize_with = "line_separated::deserialize"
     )]
     pub anesthesia_staff: Vec<String>,
-    #[serde(rename = "Location")]
+    #[serde(rename(deserialize = "Location"))]
     pub location: String,
     #[serde(
-        rename = "Adverse Events",
+        rename(deserialize = "Adverse Events"),
         deserialize_with = "comma_separated::deserialize"
     )]
     pub adverse_events: Vec<String>,
-    #[serde(rename = "ASA")]
+    #[serde(rename(deserialize = "ASA"))]
     pub asa: u8,
 
-    #[serde(rename = "An Start", deserialize_with = "hhmm_time::deserialize")]
+    #[serde(
+        rename(deserialize = "An Start"),
+        deserialize_with = "hhmm_time::deserialize"
+    )]
     pub an_start: NaiveTime,
-    #[serde(rename = "An Stop", deserialize_with = "hhmm_time::deserialize")]
+    #[serde(
+        rename(deserialize = "An Stop"),
+        deserialize_with = "hhmm_time::deserialize"
+    )]
     pub an_stop: NaiveTime,
 
-    #[serde(rename = "Smoker?", deserialize_with = "non_null_bool::deserialize")]
+    #[serde(
+        rename(deserialize = "Smoker?"),
+        deserialize_with = "non_null_bool::deserialize"
+    )]
     pub smoker: bool,
-    #[serde(rename = "Age (Years)")]
+    #[serde(rename(deserialize = "Age (Years)"))]
     pub age: u8,
-    #[serde(rename = "BMI")]
+    #[serde(rename(deserialize = "BMI"))]
     pub bmi: f64,
 }
 
