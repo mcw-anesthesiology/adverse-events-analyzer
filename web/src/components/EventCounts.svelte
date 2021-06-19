@@ -25,7 +25,7 @@
 	let counts: Map<string, number> = new Map();
 	$: getCounts(viewHandle);
 
-	let numChunks = 1;
+	let numChunks = 2;
 	let chunks: Map<string, number>[];
 	$: if (numChunks === 1) {
 		chunks = [counts];

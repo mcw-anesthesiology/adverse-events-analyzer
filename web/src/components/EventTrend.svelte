@@ -1,5 +1,5 @@
 <div>
-	<Chart type="line" {data} {axisOptions} />
+	<Chart type="line" {data} {axisOptions} {lineOptions} />
 </div>
 
 <script lang="typescript">
@@ -38,4 +38,7 @@
 		xIsSeries: true,
 	};
 
+	const lineOptions = {
+		hideDots: true
+	};
 </script>
