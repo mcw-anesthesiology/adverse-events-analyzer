@@ -47,12 +47,6 @@
 		<label>
 			<input type="checkbox" bind:checked={viewRecords} />
 			View records
-			{#if length > 1000}
-				<small>
-					<b>Warning:</b> viewing many records at once may take a
-					long time to load or freeze the window.
-				</small>
-			{/if}
 		</label>
 	</form>
 

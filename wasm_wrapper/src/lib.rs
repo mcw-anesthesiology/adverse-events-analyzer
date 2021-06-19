@@ -4,7 +4,8 @@ use serde_json;
 use wasm_bindgen::prelude::*;
 
 use adverse_events::{
-    sort_map, AdverseEvents, AdverseEventsView, Error as AdverseEventsError, Period,
+    sort_map, AdverseEventRecord, AdverseEvents, AdverseEventsView, Error as AdverseEventsError,
+    Period,
 };
 
 use std::{
@@ -161,7 +162,11 @@ pub fn release_view(handle: ViewHandle) -> Result<ViewHandle, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn get_records(handle: ViewHandle) -> Result<String, JsValue> {
+pub fn get_records(
+    handle: ViewHandle,
+    start: Option<usize>,
+    length: Option<usize>,
+) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -171,8 +176,28 @@ pub fn get_records(handle: ViewHandle) -> Result<String, JsValue> {
         .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
 
-    serde_json::to_string(&view.records)
-        .map_err(|_| JsValue::from_str("failed serializing records"))
+    let records: Vec<&AdverseEventRecord>;
+
+    let records_ref: &Vec<&AdverseEventRecord> = if start.is_some() || length.is_some() {
+        let mut iter: Box<dyn Iterator<Item = &AdverseEventRecord>> =
+            Box::new(view.records.iter().copied());
+
+        if let Some(start) = start {
+            iter = Box::new(iter.skip(start));
+        }
+
+        if let Some(length) = length {
+            iter = Box::new(iter.take(length));
+        }
+
+        records = iter.collect();
+
+        &records
+    } else {
+        &view.records
+    };
+
+    serde_json::to_string(records_ref).map_err(|_| JsValue::from_str("failed serializing records"))
 }
 
 #[wasm_bindgen]

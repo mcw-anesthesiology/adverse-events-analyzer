@@ -37,7 +37,7 @@ export interface AdverseEventUtils {
 	with_event: (handle: number, event: string) => number;
 	between: (handle: number, start: number, end: number) => number;
 	release_view: (handle: number) => number;
-	get_records: (handle: number) => string;
+	get_records: (handle: number, start?: number, length?: number) => string;
 	date_range: (handle: number) => Int32Array;
 	period_counts: (handle: number, period: string) => string;
 }
@@ -103,10 +103,12 @@ export async function releaseView(handle: number): Promise<number> {
 }
 
 export async function getRecords(
-	handle: number
+	handle: number,
+	start?: number,
+	length?: number
 ): Promise<AdverseEventRecord[]> {
 	const utils = await init;
-	return JSON.parse(utils.get_records(handle));
+	return JSON.parse(utils.get_records(handle, start, length));
 }
 
 export async function dateRange(handle: number): Promise<[Date, Date]> {
