@@ -60,7 +60,11 @@
 		<RecordsList viewHandle={currentHandle} />
 	{/if}
 
-	<EventCounts viewHandle={currentHandle} />
+	<div>
+		<EventTrend viewHandle={currentHandle} />
+		<EventCounts viewHandle={currentHandle} />
+	</div>
+
 </div>
 
 <script lang="typescript">
@@ -69,6 +73,7 @@
 	import DateRange from './DateRange.svelte';
 	import DateRangePicker from './DateRangePicker.svelte';
 	import EventCounts from './EventCounts.svelte';
+	import EventTrend from './EventTrend.svelte';
 	import RecordsList from './RecordsList.svelte';
 
 	import { between, dateRange, len, withEvent, releaseView } from '../wasm-wrapper.js';

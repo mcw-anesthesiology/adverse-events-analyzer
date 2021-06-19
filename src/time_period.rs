@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 #[derive(Serialize)]
 pub struct DatePeriodContainer<T: Serialize> {
+    pub period: Period,
     pub start: NaiveDate,
     pub end: NaiveDate,
     pub value: T,
@@ -16,6 +17,7 @@ pub type DatePeriodCount = DatePeriodContainer<usize>;
 impl<'a> DatePeriodView<'a> {
     pub fn to_count(&self) -> DatePeriodCount {
         DatePeriodCount {
+            period: self.period,
             start: self.start,
             end: self.end,
             value: self.value.len(),
@@ -23,6 +25,8 @@ impl<'a> DatePeriodView<'a> {
     }
 }
 
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all(serialize = "camelCase"))]
 pub enum Period {
     Day,
     Week,

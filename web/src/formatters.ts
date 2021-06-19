@@ -14,8 +14,16 @@ export const dateFormatter = new Intl.DateTimeFormat('en-US', {
 	day: 'numeric',
 });
 
+export const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
+	dateStyle: 'short',
+});
+
 export function formatDate(date: Date | string): string {
 	return applyDateFormatter(date, dateFormatter);
+}
+
+export function formatShortDate(date: Date | string): string {
+	return applyDateFormatter(date, shortDateFormatter);
 }
 
 export function applyDateFormatter(
@@ -34,7 +42,7 @@ export function applyDateFormatter(
 
 export const numFormatter = new Intl.NumberFormat('en-US', {
 	minimumFractionDigits: 0,
-	maximumFractionDigits: 3
+	maximumFractionDigits: 3,
 });
 
 export const percentFormatter = new Intl.NumberFormat('en-US', {

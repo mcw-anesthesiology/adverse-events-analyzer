@@ -191,6 +191,7 @@ pub fn date_range(handle: ViewHandle) -> Result<Box<[i32]>, JsValue> {
     Ok(Box::new([to_timestamp(start)?, to_timestamp(end)?]))
 }
 
+#[wasm_bindgen]
 pub fn period_counts(handle: ViewHandle, period: &str) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()

@@ -69,6 +69,12 @@ impl<'a> From<&'a AdverseEvents> for AdverseEventsView<'a> {
 }
 
 impl<'a> AdverseEventsView<'a> {
+    pub fn empty() -> Self {
+        AdverseEventsView {
+            records: Vec::new(),
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.records.len()
     }
@@ -153,64 +159,143 @@ impl<'a> AdverseEventsView<'a> {
     pub fn by_period(&self, period: Period) -> Vec<DatePeriodView<'a>> {
         match period {
             Period::Day => {
-                let by_date = group_by_owned(self.records.iter().copied(), |record| record.date);
-                by_date
-                    .into_iter()
-                    .map(|(date, records)| DatePeriodView {
-                        start: date,
-                        end: date,
-                        value: { AdverseEventsView { records } },
-                    })
-                    .collect()
+                let mut by_date =
+                    group_by_owned(self.records.iter().copied(), |record| record.date);
+
+                let min: Option<NaiveDate> = by_date.keys().copied().min();
+                let max: Option<NaiveDate> = by_date.keys().copied().max();
+
+                if let (Some(min), Some(max)) = (min, max) {
+                    let step = Duration::days(1);
+                    let mut date = min;
+                    let mut ret = Vec::new();
+
+                    while date <= max {
+                        let records = by_date.remove(&date).unwrap_or_default();
+                        ret.push(DatePeriodView {
+                            period,
+                            start: date,
+                            end: date,
+                            value: AdverseEventsView { records },
+                        });
+                        date += step;
+                    }
+
+                    ret
+                } else {
+                    Vec::new()
+                }
             }
             Period::Week => {
-                let by_week = group_by_owned(self.records.iter().copied(), |record| {
+                let mut by_week = group_by_owned(self.records.iter().copied(), |record| {
                     (record.date.year(), record.date.iso_week().week())
                 });
 
-                by_week
-                    .into_iter()
-                    .map(|((year, week), records)| DatePeriodView {
-                        start: NaiveDate::from_isoywd(year, week, Weekday::Mon),
-                        end: NaiveDate::from_isoywd(year, week, Weekday::Sun),
-                        value: AdverseEventsView { records },
-                    })
-                    .collect()
+                let dates: Vec<_> = by_week
+                    .keys()
+                    .map(|(year, week)| NaiveDate::from_isoywd(*year, *week, Weekday::Mon))
+                    .collect();
+                let min: Option<&NaiveDate> = dates.iter().min();
+                let max: Option<&NaiveDate> = dates.iter().max();
+
+                if let (Some(min), Some(max)) = (min, max) {
+                    let mut date = *min;
+
+                    let mut ret = Vec::new();
+
+                    while date <= *max {
+                        let records = by_week
+                            .remove(&(date.year(), date.iso_week().week()))
+                            .unwrap_or_default();
+
+                        ret.push(DatePeriodView {
+                            period,
+                            start: date,
+                            end: NaiveDate::from_isoywd(
+                                date.year(),
+                                date.iso_week().week(),
+                                Weekday::Sun,
+                            ),
+                            value: AdverseEventsView { records },
+                        });
+
+                        date += Duration::weeks(1);
+                    }
+
+                    ret
+                } else {
+                    Vec::new()
+                }
             }
             Period::Month => {
-                let by_month = group_by_owned(self.records.iter().copied(), |record| {
+                let mut by_month = group_by_owned(self.records.iter().copied(), |record| {
                     (record.date.year(), record.date.month())
                 });
+                let dates: Vec<_> = by_month
+                    .keys()
+                    .map(|(year, month)| NaiveDate::from_ymd(*year, *month, 1))
+                    .collect();
+                let min: Option<&NaiveDate> = dates.iter().min();
+                let max: Option<&NaiveDate> = dates.iter().max();
 
-                by_month
-                    .into_iter()
-                    .map(|((year, month), records)| {
-                        let (next_year, next_month) = if month == 12 {
-                            (year + 1, 1)
+                if let (Some(min), Some(max)) = (min, max) {
+                    let mut date = *min;
+
+                    let mut ret = Vec::new();
+
+                    while date <= *max {
+                        let records = by_month
+                            .remove(&(date.year(), date.month()))
+                            .unwrap_or_default();
+
+                        let next_date = if date.month() == 12 {
+                            NaiveDate::from_ymd(date.year(), date.month() + 1, 1)
                         } else {
-                            (year, month + 1)
+                            NaiveDate::from_ymd(date.year() + 1, 1, 1)
                         };
 
-                        DatePeriodView {
-                            start: NaiveDate::from_ymd(year, month, 1),
-                            end: NaiveDate::from_ymd(next_year, next_month, 1) - Duration::days(1),
+                        ret.push(DatePeriodView {
+                            period,
+                            start: date,
+                            end: next_date - Duration::days(1),
                             value: AdverseEventsView { records },
-                        }
-                    })
-                    .collect()
+                        });
+                        date = next_date;
+                    }
+
+                    ret
+                } else {
+                    Vec::new()
+                }
             }
             Period::Year => {
-                let by_year =
+                let mut by_year =
                     group_by_owned(self.records.iter().copied(), |record| record.date.year());
 
-                by_year
-                    .into_iter()
-                    .map(|(year, records)| DatePeriodView {
-                        start: NaiveDate::from_ymd(year, 1, 1),
-                        end: NaiveDate::from_ymd(year, 12, 31),
-                        value: AdverseEventsView { records },
-                    })
-                    .collect()
+                let min: Option<i32> = by_year.keys().copied().min();
+                let max: Option<i32> = by_year.keys().copied().max();
+
+                if let (Some(min), Some(max)) = (min, max) {
+                    let mut ret = Vec::new();
+
+                    let mut year = min;
+
+                    while year <= max {
+                        let records = by_year.remove(&year).unwrap_or_default();
+                        ret.push(DatePeriodView {
+                            period,
+                            start: NaiveDate::from_ymd(year, 1, 1),
+                            end: NaiveDate::from_ymd(year, 12, 31),
+                            value: AdverseEventsView { records },
+                        });
+
+                        year += 1;
+                    }
+
+                    ret
+                } else {
+                    Vec::new()
+                }
             }
         }
     }
