@@ -156,11 +156,16 @@ impl<'a> AdverseEventsView<'a> {
         self.records.iter().filter(count_if).count()
     }
 
-    pub fn by_period(&self, period: Period) -> Vec<DatePeriodView<'a>> {
+    pub fn by_period<F>(&self, period: Period, filter: F) -> Vec<DatePeriodView<'a>>
+    where
+        F: FnMut(&&&AdverseEventRecord) -> bool,
+    {
         match period {
             Period::Day => {
                 let mut by_date =
-                    group_by_owned(self.records.iter().copied(), |record| record.date);
+                    group_by_owned(self.records.iter().filter(filter).copied(), |record| {
+                        record.date
+                    });
 
                 let min: Option<NaiveDate> = by_date.keys().copied().min();
                 let max: Option<NaiveDate> = by_date.keys().copied().max();

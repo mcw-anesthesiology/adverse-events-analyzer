@@ -13,6 +13,7 @@ pub struct DatePeriodContainer<T: Serialize> {
 pub type DatePeriodView<'a> = DatePeriodContainer<AdverseEventsView<'a>>;
 
 pub type DatePeriodCount = DatePeriodContainer<usize>;
+pub type DatePeriodPercentage = DatePeriodContainer<f64>;
 
 impl<'a> DatePeriodView<'a> {
     pub fn to_count(&self) -> DatePeriodCount {

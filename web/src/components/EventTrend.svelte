@@ -1,21 +1,48 @@
 <div>
 	<Chart type="line" {data} {axisOptions} {lineOptions} />
+
+	<fieldset>
+		<legend>Chart view</legend>
+
+		<label>
+			<input type="radio" bind:group={viewType} value={ViewType.Count} />
+			# cases with events
+		</label>
+		<label>
+			<input type="radio" bind:group={viewType} value={ViewType.Percentage} />
+			% cases with events
+		</label>
+	</fieldset>
 </div>
 
 <script lang="typescript">
 	import Chart from 'svelte-frappe-charts';
 
 	import { formatShortDate } from '../formatters.js';
-	import { periodCounts, Period } from '../wasm-wrapper.js';
+	import { periodPercentages, periodCounts, Period } from '../wasm-wrapper.js';
 	import type { DatePeriodCount } from '../wasm-wrapper.js';
 
 	export let viewHandle: number;
 
-	let counts: DatePeriodCount[] = [];
-	$: getPeriodCounts(viewHandle);
+	enum ViewType {
+		Count = 'count',
+		Percentage = 'percentage'
+	}
 
-	async function getPeriodCounts(handle: number) {
-		counts = await periodCounts(handle, Period.Day);
+	let viewType = ViewType.Count;
+
+	let counts: DatePeriodCount[] = [];
+	$: getPeriodCounts(viewHandle, viewType);
+
+	async function getPeriodCounts(handle: number, viewType: ViewType) {
+		switch (viewType) {
+			case ViewType.Count:
+				counts = await periodCounts(handle, Period.Day);
+				break;
+			case ViewType.Percentage:
+				counts = await periodPercentages(handle, Period.Day);
+				break;
+		}
 	}
 
 	let labels: string[] = [];

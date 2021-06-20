@@ -4,8 +4,8 @@ use serde_json;
 use wasm_bindgen::prelude::*;
 
 use adverse_events::{
-    sort_map, AdverseEventRecord, AdverseEvents, AdverseEventsView, Error as AdverseEventsError,
-    Period,
+    sort_map, AdverseEventRecord, AdverseEvents, AdverseEventsView, DatePeriodPercentage,
+    DatePeriodView, Error as AdverseEventsError, Period,
 };
 
 use std::{
@@ -229,10 +229,78 @@ pub fn period_counts(handle: ViewHandle, period: &str) -> Result<String, JsValue
 
     let period = Period::from_str(period).map_err(|_| JsValue::from_str("invalid period"))?;
 
-    let view_counts = view.by_period(period);
+    let view_counts = view.by_period(period, |record| !record.adverse_events.is_empty());
     let period_counts: Vec<_> = view_counts.into_iter().map(|vc| vc.to_count()).collect();
     serde_json::to_string(&period_counts)
         .map_err(|_| JsValue::from_str("failed serializing view counts"))
+}
+
+#[wasm_bindgen]
+pub fn period_percentages(handle: ViewHandle, period: &str) -> Result<String, JsValue> {
+    let mut map_cell = VIEW_MAP
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire views"))?;
+
+    let view = map_cell
+        .get_mut()
+        .get(&handle)
+        .ok_or(JsValue::from_str("no view found for handle"))?;
+
+    let period = Period::from_str(period).map_err(|_| JsValue::from_str("invalid period"))?;
+
+    let mut with_events: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+        .by_period(period, |record| !record.adverse_events.is_empty())
+        .into_iter()
+        .map(|dpv| ((dpv.start, dpv.end), dpv))
+        .collect();
+
+    let all_records: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+        .by_period(period, |_| true)
+        .into_iter()
+        .map(|dpv| ((dpv.start, dpv.end), dpv))
+        .collect();
+
+    let all_records = sort_map(all_records);
+
+    let period_percentages: Vec<_> = all_records
+        .into_iter()
+        .map(|(dates, dpv)| {
+            let with_event_count: usize = with_events
+                .remove(&dates)
+                .map(|dpv| dpv.value.records.len())
+                .unwrap_or_default();
+
+            let total_count = dpv.value.records.len();
+
+            DatePeriodPercentage {
+                period: dpv.period,
+                start: dpv.start,
+                end: dpv.end,
+                value: if total_count == 0 {
+                    0.0
+                } else {
+                    with_event_count as f64 / total_count as f64 * 100.0
+                },
+            }
+        })
+        .collect();
+
+    serde_json::to_string(&period_percentages)
+        .map_err(|_| JsValue::from_str("failed serializing view counts"))
+}
+
+#[wasm_bindgen]
+pub fn records_with_events(handle: ViewHandle) -> Result<usize, JsValue> {
+    let mut map_cell = VIEW_MAP
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire views"))?;
+
+    let view = map_cell
+        .get_mut()
+        .get(&handle)
+        .ok_or(JsValue::from_str("no view found for handle"))?;
+
+    Ok(view.count(|record| !record.adverse_events.is_empty()))
 }
 
 fn to_timestamp(date: NaiveDate) -> Result<i32, JsValue> {
