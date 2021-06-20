@@ -8,6 +8,10 @@
 		</label>
 	</div>
 
+	<div>
+		<Chart type="percentage" {data} {colors} {maxSlices} />
+	</div>
+
 	<div class="chunks-container" class:small={numChunks > 2}>
 		{#each chunks as counts}
 			<EventCountTable {counts} />
@@ -16,14 +20,39 @@
 </div>
 
 <script lang="typescript">
+	import Chart from 'svelte-frappe-charts';
+	import { schemeSet1, schemeSet2, schemeSet3, schemeTableau10 } from 'd3-scale-chromatic';
+
 	import EventCountTable from './EventCountTable.svelte';
 
 	import { eventCounts } from '../wasm-wrapper.js';
 
 	export let viewHandle: number;
 
+	const colors: string[] = [
+		...schemeSet1,
+		...schemeSet2,
+		...schemeSet3,
+		...schemeTableau10
+	];
+	const maxSlices = colors.length;
+
+
 	let counts: Map<string, number> = new Map();
 	$: getCounts(viewHandle);
+	
+	let labels: string[];
+	let values: number[];
+	$: labels = Array.from(counts.keys());
+	$: values = Array.from(counts.values());
+
+	let data = {};
+	$: data = {
+		labels,
+		datasets: [
+			{ values }
+		]
+	};
 
 	let numChunks = 2;
 	let chunks: Map<string, number>[];

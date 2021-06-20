@@ -4,7 +4,9 @@ specifiers:
   '@rollup/plugin-commonjs': ^19.0.0
   '@rollup/plugin-node-resolve': ^13.0.0
   '@rollup/plugin-typescript': ^8.2.1
+  '@types/d3-scale-chromatic': ^2.0.0
   '@wasm-tool/rollup-plugin-rust': ^1.0.6
+  d3-scale-chromatic: ^3.0.0
   eslint: ^7.28.0
   eslint-plugin-svelte3: ^3.2.0
   papaparse: ^5.3.1
@@ -23,6 +25,7 @@ specifiers:
   wasm-pack: ^0.9.1
 
 dependencies:
+  d3-scale-chromatic: 3.0.0
   papaparse: 5.3.1
   sirv-cli: 1.0.12
   svelte-frappe-charts: 1.8.3
@@ -31,6 +34,7 @@ devDependencies:
   '@rollup/plugin-commonjs': 19.0.0_rollup@2.51.1
   '@rollup/plugin-node-resolve': 13.0.0_rollup@2.51.1
   '@rollup/plugin-typescript': 8.2.1_bed3dcd29035de54178fd3a28f68fc4b
+  '@types/d3-scale-chromatic': 2.0.0
   '@wasm-tool/rollup-plugin-rust': 1.0.6
   eslint: 7.28.0
   eslint-plugin-svelte3: 3.2.0_eslint@7.28.0+svelte@3.38.2
@@ -160,6 +164,10 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.0
       rollup: 2.51.1
+    dev: true
+
+  /@types/d3-scale-chromatic/2.0.0:
+    resolution: {integrity: sha512-Y62+2clOwZoKua84Ha0xU77w7lePiaBoTjXugT4l8Rd5LAk+Mn/ZDtrgs087a+B5uJ3jYUHHtKw5nuEzp0WBHw==}
     dev: true
 
   /@types/estree/0.0.39:
@@ -427,6 +435,26 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /d3-color/3.0.1:
+    resolution: {integrity: sha512-6/SlHkDOBLyQSJ1j1Ghs82OIUXpKWlR0hCsw0XrLSQhuUPuCSmLQ1QPH98vpnQxMUQM2/gfAkUEWsupVpd9JGw==}
+    engines: {node: '>=12'}
+    dev: false
+
+  /d3-interpolate/3.0.1:
+    resolution: {integrity: sha512-3bYs1rOD33uo8aqJfKP3JWPAibgw8Zm2+L9vBKEHJ2Rg+viTR7o5Mmv5mZcieN+FRYaAOWX5SJATX6k1PWz72g==}
+    engines: {node: '>=12'}
+    dependencies:
+      d3-color: 3.0.1
+    dev: false
+
+  /d3-scale-chromatic/3.0.0:
+    resolution: {integrity: sha512-Lx9thtxAKrO2Pq6OO2Ua474opeziKr279P/TKZsMAhYyNDD3EnCffdbgeSYN5O7m2ByQsxtuP2CSDczNUIZ22g==}
+    engines: {node: '>=12'}
+    dependencies:
+      d3-color: 3.0.1
+      d3-interpolate: 3.0.1
+    dev: false
 
   /debug/3.1.0:
     resolution: {integrity: sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==}
