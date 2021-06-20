@@ -4,8 +4,8 @@ use serde_json;
 use wasm_bindgen::prelude::*;
 
 use adverse_events::{
-    sort_map, AdverseEventRecord, AdverseEvents, AdverseEventsView, DatePeriodPercentage,
-    DatePeriodView, Error as AdverseEventsError, Period,
+    sort_map, AdverseEventRecord, AdverseEvents, AdverseEventsView, BreakdownType,
+    DatePeriodPercentage, DatePeriodView, Error as AdverseEventsError, Period,
 };
 
 use std::{
@@ -290,7 +290,7 @@ pub fn period_percentages(handle: ViewHandle, period: &str) -> Result<String, Js
 }
 
 #[wasm_bindgen]
-pub fn records_with_events(handle: ViewHandle) -> Result<usize, JsValue> {
+pub fn get_breakdown(handle: ViewHandle, breakdown_type: &str) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -300,7 +300,11 @@ pub fn records_with_events(handle: ViewHandle) -> Result<usize, JsValue> {
         .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
 
-    Ok(view.count(|record| !record.adverse_events.is_empty()))
+    let breakdown_type = BreakdownType::from_str(breakdown_type)
+        .map_err(|_| JsValue::from_str("invalid breakdown type"))?;
+
+    serde_json::to_string(&view.get_breakdown(breakdown_type))
+        .map_err(|_| JsValue::from_str("failed serializing view counts"))
 }
 
 fn to_timestamp(date: NaiveDate) -> Result<i32, JsValue> {

@@ -14,8 +14,10 @@ use std::{
     io::{Read, Seek},
 };
 
+mod breakdown;
 mod time_period;
 
+pub use breakdown::*;
 pub use time_period::*;
 
 pub struct AdverseEvents {
@@ -301,6 +303,32 @@ impl<'a> AdverseEventsView<'a> {
                 } else {
                     Vec::new()
                 }
+            }
+        }
+    }
+
+    pub fn get_breakdown(&self, breakdown_type: BreakdownType) -> Vec<LabeledCount> {
+        match breakdown_type {
+            BreakdownType::WithEvent => {
+                vec![
+                    LabeledCount {
+                        label: "With event".to_string(),
+                        value: self.count(|record| !record.adverse_events.is_empty()),
+                    },
+                    LabeledCount {
+                        label: "Without event".to_string(),
+                        value: self.count(|record| record.adverse_events.is_empty()),
+                    },
+                ]
+            }
+            BreakdownType::PatientAge => {
+                todo!()
+            }
+            BreakdownType::PatientBmi => {
+                todo!()
+            }
+            BreakdownType::PatientSmoker => {
+                todo!()
             }
         }
     }

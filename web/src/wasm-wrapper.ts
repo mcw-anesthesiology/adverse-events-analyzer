@@ -41,7 +41,7 @@ export interface AdverseEventUtils {
 	date_range: (handle: number) => Int32Array;
 	period_counts: (handle: number, period: string) => string;
 	period_percentages: (handle: number, period: string) => string;
-	records_with_events: (handle: number) => number;
+	get_breakdown: (handle: number, breakdownType: string) => string;
 }
 
 // @ts-ignore
@@ -174,9 +174,24 @@ export async function periodPercentages(
 	});
 }
 
-export async function recordsWithEvents(handle: number): Promise<number> {
+export interface LabeledCount {
+	label: string;
+	value: number;
+}
+
+export enum BreakdownType {
+	WithEvent = 'event',
+	PatientAge = 'age',
+	PatientBmi = 'bmi',
+	PatientSmoker = 'smoker',
+}
+
+export async function getBreakdown(
+	handle: number,
+	breakdownType: BreakdownType
+): Promise<LabeledCount[]> {
 	const utils = await init;
-	return utils.records_with_events(handle);
+	return JSON.parse(utils.get_breakdown(handle, breakdownType.toString()));
 }
 
 export default utils;

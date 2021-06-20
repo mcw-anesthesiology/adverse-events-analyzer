@@ -55,6 +55,7 @@
 	{/if}
 
 	<div>
+		<PieBreakdowns viewHandle={currentHandle} />
 		<EventTrend viewHandle={currentHandle} />
 		<EventCounts viewHandle={currentHandle} />
 	</div>
@@ -68,6 +69,7 @@
 	import DateRangePicker from './DateRangePicker.svelte';
 	import EventCounts from './EventCounts.svelte';
 	import EventTrend from './EventTrend.svelte';
+	import PieBreakdowns from './PieBreakdowns.svelte';
 	import RecordsList from './RecordsList.svelte';
 
 	import { between, dateRange, len, withEvent, releaseView } from '../wasm-wrapper.js';
