@@ -9,7 +9,7 @@
 	</div>
 
 	<div>
-		<Chart type="percentage" {data} {colors} {maxSlices} />
+		<Chart type="percentage" {data} {colors} {maxSlices} height={200} />
 	</div>
 
 	<div class="chunks-container" class:small={numChunks > 2}>
@@ -40,7 +40,7 @@
 
 	let counts: Map<string, number> = new Map();
 	$: getCounts(viewHandle);
-	
+
 	let labels: string[];
 	let values: number[];
 	$: labels = Array.from(counts.keys());
