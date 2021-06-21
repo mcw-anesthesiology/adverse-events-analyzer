@@ -1,6 +1,6 @@
 <div class="view-filter">
 
-	<section class="filters">
+	<div class="filters-container">
 		{#if filterStack.length > 0}
 			<button type="button" class="pop-filter-button" disabled={!filterStack.length} on:click|preventDefault={popFilter}>
 				← Remove filter
@@ -29,7 +29,7 @@
 				</div>
 			</section>
 		{/if}
-	</section>
+	</div>
 
 
 	<section class="view-header">
@@ -45,16 +45,21 @@
 			</span>
 		</aside>
 
+		<div class="filter-controls">
+			<button type="button" on:click={addHasEventFilter} disabled={hasHasEventFilter}>
+				Add has events filter
+			</button>
 
-		<form class="date-filter-form" on:submit={handleAddDateFilter}>
-			{#if earliest && latest}
-				<DateRangePicker label="Date filter" bind:selectedDateRange bind:startDate bind:endDate min={earliest} max={latest} />
+			<form class="date-filter-form" on:submit={handleAddDateFilter}>
+				{#if earliest && latest}
+					<DateRangePicker label="Date filter" bind:selectedDateRange bind:startDate bind:endDate min={earliest} max={latest} />
 
-				<button type="submit" disabled={!startDate || !endDate}>
-					Add date filter
-				</button>
-			{/if}
-		</form>
+					<button type="submit" disabled={!startDate || !endDate}>
+						Add date filter
+					</button>
+				{/if}
+			</form>
+		</div>
 	</section>
 
 	<Tabs>
@@ -243,9 +248,15 @@
 </script>
 
 <style>
-	.filters {
-		min-height: 6em;
+	.filters-container {
+		min-height: 4em;
+		display: flex;
 		margin-bottom: 1em;
+		align-items: flex-start;
+	}
+
+	.filters {
+		margin: 0 1em;
 	}
 
 	h4 {
@@ -255,11 +266,26 @@
 	.filter-breadcrumbs {
 		font-size: 0.9em;
 		display: flex;
-		min-height: 2em;
+		flex-wrap: wrap;
+	}
+
+	.filter-breadcrumbs > span {
+		margin: 0.5em;
+		padding: 0.25em 0.5em;
+		border: 1px solid var(--border-color);
+		border-radius: 2px;
+		background-color: #fafafa;
+	}
+
+	.pop-filter-button {
+		display: block;
+		padding: 0.5em 1em;
+		margin: 2em 1em 1em;
 	}
 
 	.view-header,
-	.meta {
+	.meta,
+	.filter-controls {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -271,9 +297,14 @@
 	}
 
 	.meta {
-		flex-grow: 1;
-		justify-content: space-around;
+		flex-grow: 2;
+		justify-content: space-evenly;
 		font-size: 1.25em;
+	}
+
+	.filter-controls {
+		flex-grow: 1;
+		justify-content: space-between;
 	}
 
 	.date-filter-form {
@@ -283,13 +314,5 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-	}
-
-	.filter-breadcrumbs > span {
-		margin: 0.5em;
-		padding: 0.25em 0.5em;
-		border: 1px solid var(--border-color);
-		border-radius: 2px;
-		background-color: #fafafa;
 	}
 </style>
