@@ -54,16 +54,31 @@
 		<RecordsList viewHandle={currentHandle} />
 	{/if}
 
-	<div>
-		<EventTrend viewHandle={currentHandle} />
-		<PercentageBreakdowns viewHandle={currentHandle} />
-		<EventCounts viewHandle={currentHandle} />
-	</div>
+	<Tabs>
+		<TabList>
+			<Tab>Breakdowns</Tab>
+			<Tab>Event counts</Tab>
+			<Tab>Records</Tab>
+		</TabList>
 
+		<TabPanel>
+			<EventTrend viewHandle={currentHandle} />
+			<PercentageBreakdowns viewHandle={currentHandle} />
+		</TabPanel>
+
+		<TabPanel>
+			<EventCounts viewHandle={currentHandle} />
+		</TabPanel>
+
+		<TabPanel>
+			<RecordsList viewHandle={currentHandle} />
+		</TabPanel>
+	</Tabs>
 </div>
 
 <script lang="typescript">
 	import { setContext } from 'svelte';
+	import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs';
 
 	import DateRange from './DateRange.svelte';
 	import DateRangePicker from './DateRangePicker.svelte';
@@ -76,7 +91,6 @@
 	import { getDate } from '../date-utils.js';
 
 	export let rootHandle: number;
-	let viewRecords: boolean;
 
 	let startDate: Date;
 	let endDate: Date;

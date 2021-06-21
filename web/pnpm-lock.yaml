@@ -20,6 +20,7 @@ specifiers:
   svelte-check: ^2.1.0
   svelte-frappe-charts: ^1.8.3
   svelte-preprocess: ^4.7.3
+  svelte-tabs: ^1.1.0
   tslib: ^2.3.0
   typescript: ^4.3.2
   wasm-pack: ^0.9.1
@@ -29,6 +30,7 @@ dependencies:
   papaparse: 5.3.1
   sirv-cli: 1.0.12
   svelte-frappe-charts: 1.8.3
+  svelte-tabs: 1.1.0
 
 devDependencies:
   '@rollup/plugin-commonjs': 19.0.0_rollup@2.51.1
@@ -1436,6 +1438,10 @@ packages:
       svelte: 3.38.2
       typescript: 4.3.2
     dev: true
+
+  /svelte-tabs/1.1.0:
+    resolution: {integrity: sha512-bCynxgET2uvqpB6xf/dVyqHjzmumRURQyh2QqXlrki8NxzO7h2WghF8qgpb5qeB5NTX1bMU+9Q5Hf5ey2WLaMg==}
+    dev: false
 
   /svelte/3.38.2:
     resolution: {integrity: sha512-q5Dq0/QHh4BLJyEVWGe7Cej5NWs040LWjMbicBGZ+3qpFWJ1YObRmUDZKbbovddLC9WW7THTj3kYbTOFmU9fbg==}
