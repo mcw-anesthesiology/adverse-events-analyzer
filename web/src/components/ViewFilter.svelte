@@ -41,17 +41,14 @@
 	</aside>
 
 
-	<form>
-		<DateRangePicker bind:startDate bind:endDate />
+	{#if earliest && latest}
+		<form on:submit={handleAddDateFilter}>
+			<DateRangePicker bind:selectedDateRange bind:startDate bind:endDate min={earliest} max={latest} />
 
-		<label>
-			<input type="checkbox" bind:checked={viewRecords} />
-			View records
-		</label>
-	</form>
-
-	{#if viewRecords}
-		<RecordsList viewHandle={currentHandle} />
+			<button type="submit">
+				Add date filter
+			</button>
+		</form>
 	{/if}
 
 	<Tabs>
@@ -92,6 +89,7 @@
 
 	export let rootHandle: number;
 
+	let selectedDateRange: string;
 	let startDate: Date;
 	let endDate: Date;
 
@@ -102,12 +100,18 @@
 
 	$: updateLength(currentHandle);
 	$: updateDates(currentHandle);
-	$: if (startDate && endDate) {
-		updateDateFilter(
-			getDate(startDate),
-			getDate(endDate)
-		);
-	}
+
+	function handleAddDateFilter(event: Event) {
+		event.preventDefault();
+
+		if (startDate && endDate) {
+			addDateFilter(
+				getDate(startDate),
+				getDate(endDate)
+			);
+			selectedDateRange = undefined;
+		}
+	};
 
 	async function updateLength(handle: number) {
 		length = await len(handle);
@@ -117,10 +121,6 @@
 		const [s, e] = await dateRange(handle);
 		earliest = s;
 		latest = e;
-	}
-
-	async function updateDateFilter(start: Date, end: Date) {
-		return addDateFilter(start, end);
 	}
 
 	enum FilterType {
