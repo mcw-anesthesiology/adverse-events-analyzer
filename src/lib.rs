@@ -322,13 +322,47 @@ impl<'a> AdverseEventsView<'a> {
                 ]
             }
             BreakdownType::PatientAge => {
-                todo!()
+                let range_size = 10;
+                sort_map(group_by_owned(
+                    self.records.iter().filter(|r| !r.adverse_events.is_empty()),
+                    |record| record.age - (record.age % range_size),
+                ))
+                .into_iter()
+                .map(|(range_start, records)| LabeledCount {
+                    label: format!("{} - {}", range_start, range_start + range_size - 1),
+                    value: records.len(),
+                })
+                .collect()
             }
             BreakdownType::PatientBmi => {
-                todo!()
+                let range_size = 5;
+                sort_map(group_by_owned(
+                    self.records.iter().filter(|r| !r.adverse_events.is_empty()),
+                    |record| {
+                        let bmi = record.bmi as usize;
+                        bmi - (bmi % range_size)
+                    },
+                ))
+                .into_iter()
+                .map(|(range_start, records)| LabeledCount {
+                    label: format!("{} - {}", range_start, range_start + range_size - 1),
+                    value: records.len(),
+                })
+                .collect()
             }
             BreakdownType::PatientSmoker => {
-                todo!()
+                vec![
+                    LabeledCount {
+                        label: "Smoker".to_string(),
+                        value: self
+                            .count(|record| !record.adverse_events.is_empty() && record.smoker),
+                    },
+                    LabeledCount {
+                        label: "Non-smoker".to_string(),
+                        value: self
+                            .count(|record| !record.adverse_events.is_empty() && !record.smoker),
+                    },
+                ]
             }
         }
     }
