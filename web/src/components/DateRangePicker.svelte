@@ -86,16 +86,16 @@
 <style>
 	fieldset {
 		text-align: left;
-		padding: 1em;
-		margin-bottom: 1em;
+		padding: 0.5em;
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: space-around;
 		align-items: center;
+		border: none;
 	}
 
 	label {
-		margin: 1em;
+		margin: 0 1em;
 	}
 
 	label select {

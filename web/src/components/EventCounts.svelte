@@ -1,5 +1,7 @@
 <div class="event-counts">
-	<h3>Event counts</h3>
+	<div>
+		<Chart type="percentage" {data} {colors} {maxSlices} height={200} />
+	</div>
 
 	<div class="controls">
 		<label>
@@ -8,9 +10,6 @@
 		</label>
 	</div>
 
-	<div>
-		<Chart type="percentage" {data} {colors} {maxSlices} height={200} />
-	</div>
 
 	<div class="chunks-container" class:small={numChunks > 2}>
 		{#each chunks as counts}

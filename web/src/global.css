@@ -18,6 +18,10 @@ details {
 	padding: 1em;
 }
 
+fieldset {
+	border: 1px solid var(--border-color);
+}
+
 .row {
 	display: flex;
 	flex-wrap: wrap;
@@ -40,7 +44,6 @@ label > select {
 label > input[type='checkbox'],
 label > input[type='radio'] {
 	display: inline-block;
-	vertical-align: middle;
 }
 
 .button-container {

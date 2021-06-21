@@ -28,28 +28,30 @@
 	</section>
 
 
-	<aside class="meta">
-		<span>
-			{length} records
-		</span>
+	<section class="view-header">
+		<aside class="meta">
+			<span>
+				{length} records
+			</span>
 
-		<span>
+			<span>
+				{#if earliest && latest}
+					<DateRange start={earliest} end={latest} />
+				{/if}
+			</span>
+		</aside>
+
+
+		<form class="date-filter-form" on:submit={handleAddDateFilter}>
 			{#if earliest && latest}
-				<DateRange start={earliest} end={latest} />
+				<DateRangePicker label="Date filter" bind:selectedDateRange bind:startDate bind:endDate min={earliest} max={latest} />
+
+				<button type="submit" disabled={!startDate || !endDate}>
+					Add date filter
+				</button>
 			{/if}
-		</span>
-	</aside>
-
-
-	{#if earliest && latest}
-		<form on:submit={handleAddDateFilter}>
-			<DateRangePicker bind:selectedDateRange bind:startDate bind:endDate min={earliest} max={latest} />
-
-			<button type="submit">
-				Add date filter
-			</button>
 		</form>
-	{/if}
+	</section>
 
 	<Tabs>
 		<TabList>
@@ -227,6 +229,33 @@
 		font-size: 0.9em;
 		display: flex;
 		min-height: 2em;
+	}
+
+	.view-header,
+	.meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.view-header {
+		justify-content: space-between;
+		margin-bottom: 1em;
+	}
+
+	.meta {
+		flex-grow: 1;
+		justify-content: space-around;
+		font-size: 1.25em;
+	}
+
+	.date-filter-form {
+		border: 1px solid var(--border-color);
+		border-radius: 1px;
+		padding: 1em;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	.filter-breadcrumbs > span {

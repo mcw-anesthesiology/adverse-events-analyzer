@@ -1,18 +1,20 @@
 <div>
+	<div class="trend-controls">
+		<fieldset>
+			<legend>Chart view</legend>
+
+			<label>
+				<input type="radio" bind:group={viewType} value={ViewType.Count} />
+				# cases with events
+			</label>
+			<label>
+				<input type="radio" bind:group={viewType} value={ViewType.Percentage} />
+				% cases with events
+			</label>
+		</fieldset>
+	</div>
+
 	<Chart type="line" {data} {axisOptions} {lineOptions} />
-
-	<fieldset>
-		<legend>Chart view</legend>
-
-		<label>
-			<input type="radio" bind:group={viewType} value={ViewType.Count} />
-			# cases with events
-		</label>
-		<label>
-			<input type="radio" bind:group={viewType} value={ViewType.Percentage} />
-			% cases with events
-		</label>
-	</fieldset>
 </div>
 
 <script lang="typescript">
@@ -69,3 +71,14 @@
 		hideDots: true
 	};
 </script>
+
+<style>
+	.trend-controls {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	label {
+		margin: 0.5em;
+	}
+</style>
