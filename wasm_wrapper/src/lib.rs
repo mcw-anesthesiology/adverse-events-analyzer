@@ -88,6 +88,29 @@ pub fn event_counts(handle: ViewHandle) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
+pub fn with_any_event(handle: ViewHandle) -> Result<ViewHandle, JsValue> {
+    let mut map_cell = VIEW_MAP
+        .lock()
+        .map_err(|_| JsValue::from_str("could not aquire views"))?;
+
+    let map = map_cell.get_mut();
+    let view = map
+        .get(&handle)
+        .ok_or(JsValue::from_str("no view found for handle"))?;
+
+    let new_view = view.with_any_event();
+    let mut next_handle_lock = NEXT_HANDLE
+        .lock()
+        .map_err(|_| JsValue::from_str("could not acquire next handle"))?;
+    let next_handle = next_handle_lock.get_mut();
+    let handle: ViewHandle = *next_handle;
+    map.insert(handle, new_view);
+    *next_handle += 1;
+
+    Ok(handle)
+}
+
+#[wasm_bindgen]
 pub fn with_event(handle: ViewHandle, event: &str) -> Result<ViewHandle, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()

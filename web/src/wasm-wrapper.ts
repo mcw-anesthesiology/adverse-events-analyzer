@@ -34,6 +34,7 @@ export interface AdverseEventUtils {
 	get_events: (zipData: Uint8Array) => number;
 	len: (handle: number) => number;
 	event_counts: (handle: number) => string;
+	with_any_event: (handle: number) => number;
 	with_event: (handle: number, event: string) => number;
 	between: (handle: number, start: number, end: number) => number;
 	release_view: (handle: number) => number;
@@ -75,6 +76,11 @@ export async function eventCounts(
 ): Promise<Map<string, number>> {
 	const utils = await init;
 	return new Map(JSON.parse(utils.event_counts(handle)));
+}
+
+export async function withAnyEvent(handle: number): Promise<number> {
+	const utils = await init;
+	return utils.with_any_event(handle);
 }
 
 export async function withEvent(

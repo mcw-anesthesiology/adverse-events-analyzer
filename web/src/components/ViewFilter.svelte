@@ -2,28 +2,32 @@
 
 	<section class="filters">
 		{#if filterStack.length > 0}
-			<h4>Filters</h4>
+			<button type="button" class="pop-filter-button" disabled={!filterStack.length} on:click|preventDefault={popFilter}>
+				← Remove filter
+			</button>
 
-			<div class="filter-breadcrumbs">
-				{#each filterStack as filter}
-					{#if isEventFilter(filter)}
-						<span class="event-filter">
-							Event: {filter.eventName}
-						</span>
-					{:else if isDateFilter(filter)}
-						<span class="event-filter">
-							Between:
-							<DateRange start={filter.startDate} end={filter.endDate} />
-						</span>
-					{/if}
-				{/each}
-			</div>
+			<section class="filters">
+				<h4>Filters</h4>
 
-			<div class="back-container">
-				<a href="#" class:disabled={!filterStack.length} on:click|preventDefault={popFilter}>
-					← Remove filter
-				</a>
-			</div>
+				<div class="filter-breadcrumbs">
+					{#each filterStack as filter}
+						{#if filter.type === FilterType.HasEvent}
+							<span>
+								Has events
+							</span>
+						{:else if isEventFilter(filter)}
+							<span>
+								Event: {filter.eventName}
+							</span>
+						{:else if isDateFilter(filter)}
+							<span>
+								Between:
+								<DateRange start={filter.startDate} end={filter.endDate} />
+							</span>
+						{/if}
+					{/each}
+				</div>
+			</section>
 		{/if}
 	</section>
 
@@ -86,7 +90,7 @@
 	import PercentageBreakdowns from './PercentageBreakdowns.svelte';
 	import RecordsList from './RecordsList.svelte';
 
-	import { between, dateRange, len, withEvent, releaseView } from '../wasm-wrapper.js';
+	import { between, dateRange, len, withAnyEvent, withEvent, releaseView } from '../wasm-wrapper.js';
 	import { getDate } from '../date-utils.js';
 
 	export let rootHandle: number;
@@ -95,13 +99,15 @@
 	let startDate: Date;
 	let endDate: Date;
 
-
 	let length: number = 0;
 	let earliest: Date;
 	let latest: Date;
 
 	$: updateLength(currentHandle);
 	$: updateDates(currentHandle);
+
+	let hasHasEventFilter: boolean;
+	$: hasHasEventFilter = filterStack.some(event => event.type === FilterType.HasEvent);
 
 	function handleAddDateFilter(event: Event) {
 		event.preventDefault();
@@ -126,6 +132,7 @@
 	}
 
 	enum FilterType {
+		HasEvent = 'hasEvent',
 		Event = 'event',
 		Date = 'date',
 	}
@@ -135,11 +142,17 @@
 		handle: number;
 	}
 
+	interface HasEventFilter extends Filter {
+		type: FilterType.HasEvent;
+	}
+
 	interface EventFilter extends Filter {
+		type: FilterType.Event;
 		eventName: string;
 	}
 
 	interface DateFilter extends Filter {
+		type: FilterType.Date;
 		startDate: Date;
 		endDate: Date;
 	}
@@ -160,6 +173,20 @@
 		filterStack.push(filter);
 		filterStack = filterStack;
 		currentHandle = filter.handle;
+	}
+
+	async function addHasEventFilter() {
+		try {
+			const handle = await withAnyEvent(currentHandle);
+			const filter: HasEventFilter = {
+				type: FilterType.HasEvent,
+				handle,
+			};
+
+			addFilter(filter);
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	async function addEventFilter(eventName: string) {
