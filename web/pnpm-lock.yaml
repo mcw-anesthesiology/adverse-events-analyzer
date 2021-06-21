@@ -9,6 +9,7 @@ specifiers:
   d3-scale-chromatic: ^3.0.0
   eslint: ^7.28.0
   eslint-plugin-svelte3: ^3.2.0
+  localforage: ^1.9.0
   papaparse: ^5.3.1
   rollup: ^2.51.1
   rollup-plugin-css-only: ^3.1.0
@@ -27,6 +28,7 @@ specifiers:
 
 dependencies:
   d3-scale-chromatic: 3.0.0
+  localforage: 1.9.0
   papaparse: 5.3.1
   sirv-cli: 1.0.12
   svelte-frappe-charts: 1.8.3
@@ -795,6 +797,10 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
+  /immediate/3.0.6:
+    resolution: {integrity: sha1-nbHb0Pr43m++D13V5Wu2BigN5ps=}
+    dev: false
+
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -914,6 +920,12 @@ packages:
       type-check: 0.4.0
     dev: true
 
+  /lie/3.1.1:
+    resolution: {integrity: sha1-mkNrLMd0bKWd56QfpGmz77dr2H4=}
+    dependencies:
+      immediate: 3.0.6
+    dev: false
+
   /livereload-js/3.3.2:
     resolution: {integrity: sha512-w677WnINxFkuixAoUEXOStewzLYGI76XVag+0JWMMEyjJQKs0ibWZMxkTlB96Lm3EjZ7IeOxVziBEbtxVQqQZA==}
     dev: true
@@ -935,6 +947,12 @@ packages:
   /local-access/1.1.0:
     resolution: {integrity: sha512-XfegD5pyTAfb+GY6chk283Ox5z8WexG56OvM06RWLpAc/UHozO8X6xAxEkIitZOtsSMM1Yr3DkHgW5W+onLhCw==}
     engines: {node: '>=6'}
+    dev: false
+
+  /localforage/1.9.0:
+    resolution: {integrity: sha512-rR1oyNrKulpe+VM9cYmcFn6tsHuokyVHFaCM3+osEmxaHTbEk8oQu6eGDfS6DQLWi/N67XRmB8ECG37OES368g==}
+    dependencies:
+      lie: 3.1.1
     dev: false
 
   /lodash.clonedeep/4.5.0:

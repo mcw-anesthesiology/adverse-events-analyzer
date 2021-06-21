@@ -5,24 +5,26 @@
 
 <main>
 	{#if dataLoaded}
+		<button type="button" on:click={handleClearArchive}>
+			Reset
+		</button>
+
 		<div>
 			{#if rootHandle != null}
 				<ViewFilter {rootHandle} />
 			{/if}
 		</div>
+	{:else if loading}
+		<p>Loading...</p>
 	{:else}
 		<form on:submit={handleSubmit} class:loading>
 			<label>
-				{#if loading}
-					Loading...
-				{:else}
-					<span>
-						Drop file
-						<small>
-							or click to select
-						</small>
-					</span>
-				{/if}
+				<span>
+					Drop file
+					<small>
+						or click to select
+					</small>
+				</span>
 
 				<input type="file" name="archive" accept=".zip" on:input={handleArchiveChange} disabled={loading} />
 			</label>
@@ -46,6 +48,7 @@
 <script>
 	import ViewFilter from './ViewFilter.svelte';
 
+	import { inputFile } from '../stores.js';
 	import { init } from '../wasm-wrapper.js';
 
 	import '../anet.css';
@@ -62,6 +65,14 @@
 		if (input.files.length === 0) return;
 
 		const archive = input.files[0];
+		inputFile.set(archive);
+	}
+
+	$: getEvents($inputFile);
+
+	async function getEvents(archive) {
+		if (!archive) return;
+
 		loading = true;
 		loadingError = null;
 		try {
@@ -82,6 +93,11 @@
 
 	async function handleSubmit(event) {
 		event.preventDefault();
+	}
+
+	function handleClearArchive() {
+		$inputFile = null;
+		location.reload();
 	}
 </script>
 
