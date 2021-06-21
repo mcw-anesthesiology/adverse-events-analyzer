@@ -2,7 +2,7 @@
 	<thead>
 		<tr>
 			<th>Event</th>
-			<th class="numeric">Number</th>
+			<th class="numeric">#</th>
 			<td class="bar-col"></td>
 		</tr>
 	</thead>
