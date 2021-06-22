@@ -17,21 +17,21 @@
 				<div class="view-selection-group">
 					<label>
 						<input type="radio" bind:group={viewType} value={TimeseriesType.ComplicationSpecifiedCount} />
-						# with complications button pressed
+						# with complications specified
 					</label>
 					<label>
 						<input type="radio" bind:group={viewType} value={TimeseriesType.ComplicationSpecifiedPercentage} />
-						% with complications button pressed
+						% with complications specified
 					</label>
 				</div>
 				<div class="view-selection-group">
 					<label>
 						<input type="radio" bind:group={viewType} value={TimeseriesType.ComplicationOccurredCount} />
-						# with complications = "Yes"
+						# with complications occurred
 					</label>
 					<label>
 						<input type="radio" bind:group={viewType} value={TimeseriesType.ComplicationOccurredPercentage} />
-						% with complications = "Yes"
+						% with complications occurred
 					</label>
 				</div>
 			</div>
