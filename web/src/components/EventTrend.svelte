@@ -44,16 +44,11 @@
 <script lang="typescript">
 	import Chart from 'svelte-frappe-charts';
 
-	import { formatNumber, formatShortDate } from '../formatters.js';
+	import { formatShortDate } from '../formatters.js';
 	import { getTimeseries, Period, TimeseriesType } from '../wasm-wrapper.js';
 	import type { DatePeriodNumber } from '../wasm-wrapper.js';
 
 	export let viewHandle: number;
-
-	enum ViewType {
-		Count = 'count',
-		Percentage = 'percentage'
-	}
 
 	let viewType = TimeseriesType.EventCount;
 
