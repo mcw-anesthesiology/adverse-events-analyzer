@@ -49,7 +49,11 @@
 						<td>
 							<ul>
 								{#each record.adverseEvents as event}
-									<li>{event}</li>
+									<li>
+										<a href="#" on:click={handleEventClick}>
+											{event}
+										</a>
+									</li>
 								{/each}
 							</ul>
 						</td>
@@ -88,6 +92,8 @@
 </div>
 
 <script>
+	import { getContext } from 'svelte';
+
 	import RichDate from './RichDate.svelte';
 	import Paginator from './Paginator.svelte';
 
@@ -107,6 +113,17 @@
 
 	$: fetchRecords(viewHandle, start, pageSize);
 	$: fetchLen(viewHandle);
+
+	const { addEventFilter } = getContext('filter');
+
+	async function handleEventClick(event) {
+		event.preventDefault();
+
+		const th = event.target;
+		const eventName = th.textContent.trim();
+
+		return addEventFilter(eventName);
+	}
 
 	async function fetchRecords(handle, start, length) {
 		records = await getRecords(handle, start, length);
