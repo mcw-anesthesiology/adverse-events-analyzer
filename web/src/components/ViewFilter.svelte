@@ -11,7 +11,15 @@
 
 				<div class="filter-breadcrumbs">
 					{#each filterStack as filter}
-						{#if filter.type === FilterType.HasEvent}
+						{#if filter.type === FilterType.WithComplicationsSpecified}
+							<span>
+								Complications specified
+							</span>
+						{:else if filter.type === FilterType.WithComplicationsOccurred}
+							<span>
+								Complications occurred
+							</span>
+						{:else if filter.type === FilterType.HasEvent}
 							<span>
 								Has events
 							</span>
@@ -46,9 +54,19 @@
 		</aside>
 
 		<div class="filter-controls">
-			<button type="button" on:click={addHasEventFilter} disabled={hasHasEventFilter}>
-				Add has events filter
-			</button>
+			<div class="filter-buttons">
+				<button type="button" on:click={addHasEventFilter} disabled={hasHasEventFilter}>
+					Add has events filter
+				</button>
+
+				<button type="button" on:click={addWithComplicationsSpecifiedFilter} disabled={hasWithComplicationsSpecifiedFilter}>
+					Add complications specified filter
+				</button>
+
+				<button type="button" on:click={addWithComplicationsOccurredFilter} disabled={hasWithComplicationsOccurredFilter}>
+					Add has complications filter
+				</button>
+			</div>
 
 			<form class="date-filter-form" on:submit={handleAddDateFilter}>
 				{#if earliest && latest}
@@ -95,7 +113,7 @@
 	import PercentageBreakdowns from './PercentageBreakdowns.svelte';
 	import RecordsList from './RecordsList.svelte';
 
-	import { between, dateRange, len, withAnyEvent, withEvent, releaseView } from '../wasm-wrapper.js';
+	import { between, dateRange, len, withAnyEvent, withEvent, releaseView, withComplicationsSpecified, withComplicationsOccurred } from '../wasm-wrapper.js';
 	import { getDate } from '../date-utils.js';
 
 	export let rootHandle: number;
@@ -110,6 +128,12 @@
 
 	$: updateLength(currentHandle);
 	$: updateDates(currentHandle);
+
+	let hasWithComplicationsSpecifiedFilter: boolean;
+	$: hasWithComplicationsSpecifiedFilter = filterStack.some(event => event.type === FilterType.WithComplicationsSpecified);
+
+	let hasWithComplicationsOccurredFilter: boolean;
+	$: hasWithComplicationsOccurredFilter = filterStack.some(event => event.type === FilterType.WithComplicationsOccurred);
 
 	let hasHasEventFilter: boolean;
 	$: hasHasEventFilter = filterStack.some(event => event.type === FilterType.HasEvent);
@@ -137,6 +161,8 @@
 	}
 
 	enum FilterType {
+		WithComplicationsSpecified = 'complicationsSpecified',
+		WithComplicationsOccurred = 'complicationsOccurred',
 		HasEvent = 'hasEvent',
 		Event = 'event',
 		Date = 'date',
@@ -178,6 +204,34 @@
 		filterStack.push(filter);
 		filterStack = filterStack;
 		currentHandle = filter.handle;
+	}
+
+	async function addWithComplicationsSpecifiedFilter() {
+		try {
+			const handle = await withComplicationsSpecified(currentHandle);
+			const filter: HasEventFilter = {
+				type: FilterType.WithComplicationsSpecified,
+				handle,
+			};
+
+			addFilter(filter);
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	async function addWithComplicationsOccurredFilter() {
+		try {
+			const handle = await withComplicationsOccurred(currentHandle);
+			const filter: HasEventFilter = {
+				type: FilterType.WithComplicationsOccurred,
+				handle,
+			};
+
+			addFilter(filter);
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	async function addHasEventFilter() {
@@ -305,6 +359,15 @@
 	.filter-controls {
 		flex-grow: 1;
 		justify-content: space-between;
+	}
+
+	.filter-buttons {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.filter-buttons button {
+		margin: 0.5em 0;
 	}
 
 	.date-filter-form {
