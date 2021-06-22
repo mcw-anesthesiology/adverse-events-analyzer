@@ -6,9 +6,11 @@
 			Number of columns
 			<input type="number" bind:value={numChunks} min="1" max="5" />
 		</label>
+
+		<PrintButton target={chunksContainer} filename="Event counts.pdf" options={printOptions} />
 	</div>
 
-	<div class="chunks-container" class:small={numChunks > 2}>
+	<div bind:this={chunksContainer} class="chunks-container" class:small={numChunks > 2}>
 		{#each chunks as counts}
 			<EventCountTable {counts} />
 		{/each}
@@ -20,9 +22,11 @@
 
 	import Chart from './FrappeChart.svelte';
 	import EventCountTable from './EventCountTable.svelte';
+	import PrintButton from './PrintButton.svelte';
 
 	import { eventCounts } from '../wasm-wrapper.js';
 
+	let chunksContainer: HTMLDivElement;
 	export let viewHandle: number;
 
 	const colors: string[] = [
@@ -69,13 +73,26 @@
 	async function getCounts(handle: number) {
 		counts = await eventCounts(handle);
 	}
+
+	const printOptions = {
+		printBackground: true
+	};
 </script>
 
 <style>
 	.controls {
 		display: flex;
 		justify-content: flex-end;
+		align-items: flex-end;
 		margin-top: 1em;
+	}
+
+	.controls > :global(:not(:first-child)) {
+		margin-left: 1em;
+	}
+
+	.controls > :global(button) {
+		display: block;
 	}
 
 	.chunks-container {
@@ -88,5 +105,15 @@
 
 	input[type="number"] {
 		width: 100%;
+	}
+
+	@media print {
+		.chunks-container {
+			flex-wrap: wrap;
+		}
+
+		.chunks-container :global(table ~ table thead) {
+			display: none;
+		}
 	}
 </style>

@@ -4,6 +4,7 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import replace from '@rollup/plugin-replace';
 import css from 'rollup-plugin-css-only';
 import livereload from 'rollup-plugin-livereload';
 import rust from '@wasm-tool/rollup-plugin-rust';
@@ -22,14 +23,18 @@ function serve() {
 	return {
 		writeBundle() {
 			if (server) return;
-			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
-				stdio: ['ignore', 'inherit', 'inherit'],
-				shell: true
-			});
+			server = require('child_process').spawn(
+				'npm',
+				['run', 'start', '--', '--dev'],
+				{
+					stdio: ['ignore', 'inherit', 'inherit'],
+					shell: true,
+				}
+			);
 
 			process.on('SIGTERM', toExit);
 			process.on('exit', toExit);
-		}
+		},
 	};
 }
 
@@ -40,16 +45,21 @@ export default {
 			sourcemap: true,
 			format: 'es',
 			name: 'app',
-			file: 'public/build/app.mjs'
+			file: 'public/build/app.mjs',
 		},
 		{
 			sourcemap: true,
 			format: 'iife',
 			name: 'MCWAnesthAdverseEvents',
-			file: 'public/build/bundle.js'
-		}
+			file: 'public/build/bundle.js',
+		},
 	],
 	plugins: [
+		replace({
+			'import.meta.env.PRINTER_ENDPOINT': JSON.stringify(
+				process.env.PRINTER_ENDPOINT ?? 'http://localhost:3000'
+			),
+		}),
 		svelte({
 			emitCss: true,
 			compilerOptions: {
@@ -68,17 +78,17 @@ export default {
 		// https://github.com/rollup/plugins/tree/master/packages/commonjs
 		resolve({
 			browser: true,
-			dedupe: ['svelte']
+			dedupe: ['svelte'],
 		}),
 		commonjs(),
 		css({
-			output: 'bundle.css'
+			output: 'bundle.css',
 		}),
 
 		rust({
 			debug: false,
 			serverPath: '/build/',
-			watchPatterns: ['../../**/*.rs']
+			watchPatterns: ['../../**/*.rs'],
 		}),
 
 		// In dev mode, call `npm run start` once
@@ -91,9 +101,9 @@ export default {
 
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
-		production && terser()
+		production && terser(),
 	],
 	watch: {
-		clearScreen: false
-	}
+		clearScreen: false,
+	},
 };
