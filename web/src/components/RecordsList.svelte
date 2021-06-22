@@ -107,7 +107,7 @@
 	$: start = pageNum * pageSize;
 
 	let pageNum = 0;
-	let pageSize = 5;
+	let pageSize = 10;
 	let maxPageNum;
 	$: maxPageNum = Math.ceil(numRecords / pageSize) - 1;
 
