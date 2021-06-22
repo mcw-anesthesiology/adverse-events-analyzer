@@ -9,6 +9,7 @@ pub struct LabeledCount {
 }
 
 pub enum BreakdownType {
+    WithComplications,
     WithEvent,
     PatientAge,
     PatientBmi,
@@ -20,6 +21,7 @@ impl FromStr for BreakdownType {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
+            "complications" => Ok(BreakdownType::WithComplications),
             "event" => Ok(BreakdownType::WithEvent),
             "age" => Ok(BreakdownType::PatientAge),
             "bmi" => Ok(BreakdownType::PatientBmi),

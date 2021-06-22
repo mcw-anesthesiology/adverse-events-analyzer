@@ -310,6 +310,22 @@ impl<'a> AdverseEventsView<'a> {
 
     pub fn get_breakdown(&self, breakdown_type: BreakdownType) -> Vec<LabeledCount> {
         match breakdown_type {
+            BreakdownType::WithComplications => {
+                vec![
+                    LabeledCount {
+                        label: "With complications".to_string(),
+                        value: self.count(|record| record.complications == Some(true)),
+                    },
+                    LabeledCount {
+                        label: "Without complications".to_string(),
+                        value: self.count(|record| record.complications == Some(false)),
+                    },
+                    LabeledCount {
+                        label: "Unspecified complications".to_string(),
+                        value: self.count(|record| record.complications.is_none()),
+                    },
+                ]
+            }
             BreakdownType::WithEvent => {
                 vec![
                     LabeledCount {

@@ -176,6 +176,7 @@ export interface LabeledCount {
 }
 
 export enum BreakdownType {
+	WithComplications = 'complications',
 	WithEvent = 'event',
 	PatientAge = 'age',
 	PatientBmi = 'bmi',
