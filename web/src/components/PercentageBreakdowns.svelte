@@ -18,7 +18,7 @@
 </section>
 
 <script lang="typescript">
-	import Chart from 'svelte-frappe-charts';
+	import Chart from './FrappeChart.svelte';
 
 	import { BreakdownType, getBreakdown } from '../wasm-wrapper.js';
 	import type { LabeledCount } from '../wasm-wrapper.js';

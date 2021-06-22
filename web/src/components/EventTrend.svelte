@@ -38,17 +38,19 @@
 		</fieldset>
 	</div>
 
-	<Chart type="line" {data} {axisOptions} {lineOptions} />
+	<Chart type="line" {data} {axisOptions} {lineOptions} bind:this={chart} />
 </div>
 
 <script lang="typescript">
-	import Chart from 'svelte-frappe-charts';
+	import Chart from './FrappeChart.svelte';
 
 	import { formatShortDate } from '../formatters.js';
 	import { getTimeseries, Period, TimeseriesType } from '../wasm-wrapper.js';
 	import type { DatePeriodNumber } from '../wasm-wrapper.js';
 
 	export let viewHandle: number;
+
+	let chart: Chart;
 
 	let viewType = TimeseriesType.EventCount;
 

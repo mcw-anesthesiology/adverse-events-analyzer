@@ -1,7 +1,5 @@
 <div class="event-counts">
-	<div>
-		<Chart type="percentage" {data} {colors} {maxSlices} height={200} />
-	</div>
+	<Chart type="percentage" {data} {colors} {maxSlices} height={200} />
 
 	<div class="controls">
 		<label>
@@ -9,7 +7,6 @@
 			<input type="number" bind:value={numChunks} min="1" max="5" />
 		</label>
 	</div>
-
 
 	<div class="chunks-container" class:small={numChunks > 2}>
 		{#each chunks as counts}
@@ -19,9 +16,9 @@
 </div>
 
 <script lang="typescript">
-	import Chart from 'svelte-frappe-charts';
 	import { schemeSet1, schemeSet2, schemeSet3, schemeTableau10 } from 'd3-scale-chromatic';
 
+	import Chart from './FrappeChart.svelte';
 	import EventCountTable from './EventCountTable.svelte';
 
 	import { eventCounts } from '../wasm-wrapper.js';
@@ -75,17 +72,18 @@
 </script>
 
 <style>
+	.controls {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 1em;
+	}
+
 	.chunks-container {
 		display: flex;
 	}
 
 	.chunks-container.small {
 		font-size: 0.75em;
-	}
-
-	.controls {
-		display: flex;
-		justify-content: flex-end;
 	}
 
 	input[type="number"] {
