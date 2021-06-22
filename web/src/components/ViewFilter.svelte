@@ -64,7 +64,7 @@
 				</button>
 
 				<button type="button" on:click={addWithComplicationsOccurredFilter} disabled={hasWithComplicationsOccurredFilter}>
-					Add has complications filter
+					Add complications occurred filter
 				</button>
 			</div>
 
@@ -130,7 +130,7 @@
 	$: updateDates(currentHandle);
 
 	let hasWithComplicationsSpecifiedFilter: boolean;
-	$: hasWithComplicationsSpecifiedFilter = filterStack.some(event => event.type === FilterType.WithComplicationsSpecified);
+	$: hasWithComplicationsSpecifiedFilter = filterStack.some(event => event.type === FilterType.WithComplicationsSpecified || event.type === FilterType.WithComplicationsOccurred);
 
 	let hasWithComplicationsOccurredFilter: boolean;
 	$: hasWithComplicationsOccurredFilter = filterStack.some(event => event.type === FilterType.WithComplicationsOccurred);
