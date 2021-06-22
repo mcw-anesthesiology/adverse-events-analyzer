@@ -36,8 +36,11 @@ export interface AdverseEventUtils {
 	release_view: (handle: number) => number;
 	get_records: (handle: number, start?: number, length?: number) => string;
 	date_range: (handle: number) => string;
-	period_counts: (handle: number, period: string) => string;
-	period_percentages: (handle: number, period: string) => string;
+	get_timeseries: (
+		handle: number,
+		timeseriesType: string,
+		period: string
+	) => string;
 	get_breakdown: (handle: number, breakdownType: string) => string;
 }
 
@@ -125,42 +128,40 @@ export enum Period {
 	Year = 'year',
 }
 
-interface StringDatePeriodCount {
+export enum TimeseriesType {
+	EventCount = 'event',
+	EventPercentage = 'eventPercentage',
+	ComplicationSpecifiedCount = 'complicationSpecified',
+	ComplicationSpecifiedPercentage = 'complicationSpecifiedPercentage',
+	ComplicationOccurredCount = 'complicationOccurred',
+	ComplicationOccurredPercentage = 'complicationOccurredPercentage',
+}
+
+interface StringDatePeriodNumber {
 	start: string;
 	end: string;
 	value: number;
 }
 
-export interface DatePeriodCount {
+export interface DatePeriodNumber {
 	start: Date;
 	end: Date;
 	value: number;
 }
 
-export async function periodCounts(
+export async function getTimeseries(
 	handle: number,
+	timeseriesType: TimeseriesType,
 	period: Period
-): Promise<DatePeriodCount[]> {
+): Promise<DatePeriodNumber[]> {
 	const utils = await init;
-	const counts = utils.period_counts(handle, period.toString());
+	const counts = utils.get_timeseries(
+		handle,
+		timeseriesType.toString(),
+		period.toString()
+	);
 
-	return JSON.parse(counts).map((count: StringDatePeriodCount) => {
-		return {
-			start: parseDate(count.start),
-			end: parseDate(count.end),
-			value: count.value,
-		};
-	});
-}
-
-export async function periodPercentages(
-	handle: number,
-	period: Period
-): Promise<DatePeriodCount[]> {
-	const utils = await init;
-	const counts = utils.period_percentages(handle, period.toString());
-
-	return JSON.parse(counts).map((count: StringDatePeriodCount) => {
+	return JSON.parse(counts).map((count: StringDatePeriodNumber) => {
 		return {
 			start: parseDate(count.start),
 			end: parseDate(count.end),

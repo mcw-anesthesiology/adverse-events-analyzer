@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use adverse_events::{
     sort_map, AdverseEventRecord, AdverseEvents, AdverseEventsView, BreakdownType,
-    DatePeriodPercentage, DatePeriodView, Error as AdverseEventsError, Period,
+    DatePeriodPercentage, DatePeriodView, Error as AdverseEventsError, Period, TimeseriesType,
 };
 
 use std::{
@@ -235,7 +235,11 @@ pub fn date_range(handle: ViewHandle) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn period_counts(handle: ViewHandle, period: &str) -> Result<String, JsValue> {
+pub fn get_timeseries(
+    handle: ViewHandle,
+    timeseries_type: &str,
+    period: &str,
+) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -245,66 +249,154 @@ pub fn period_counts(handle: ViewHandle, period: &str) -> Result<String, JsValue
         .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
 
-    let period = Period::from_str(period).map_err(|_| JsValue::from_str("invalid period"))?;
-
-    let view_counts = view.by_period(period, |record| !record.adverse_events.is_empty());
-    let period_counts: Vec<_> = view_counts.into_iter().map(|vc| vc.to_count()).collect();
-    serde_json::to_string(&period_counts)
-        .map_err(|_| JsValue::from_str("failed serializing view counts"))
-}
-
-#[wasm_bindgen]
-pub fn period_percentages(handle: ViewHandle, period: &str) -> Result<String, JsValue> {
-    let mut map_cell = VIEW_MAP
-        .lock()
-        .map_err(|_| JsValue::from_str("could not acquire views"))?;
-
-    let view = map_cell
-        .get_mut()
-        .get(&handle)
-        .ok_or(JsValue::from_str("no view found for handle"))?;
+    let timeseries_type = TimeseriesType::from_str(timeseries_type)
+        .map_err(|_| JsValue::from_str("invalid timeseries type"))?;
 
     let period = Period::from_str(period).map_err(|_| JsValue::from_str("invalid period"))?;
 
-    let mut with_events: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
-        .by_period(period, |record| !record.adverse_events.is_empty())
-        .into_iter()
-        .map(|dpv| ((dpv.start, dpv.end), dpv))
-        .collect();
+    match timeseries_type {
+        TimeseriesType::EventCount => {
+            let view_counts = view.by_period(period, |record| !record.adverse_events.is_empty());
+            let period_counts: Vec<_> = view_counts.into_iter().map(|vc| vc.to_count()).collect();
+            serde_json::to_string(&period_counts)
+                .map_err(|_| JsValue::from_str("failed serializing view counts"))
+        }
+        TimeseriesType::EventPercentage => {
+            let mut with_events: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+                .by_period(period, |record| !record.adverse_events.is_empty())
+                .into_iter()
+                .map(|dpv| ((dpv.start, dpv.end), dpv))
+                .collect();
 
-    let all_records: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
-        .by_period(period, |_| true)
-        .into_iter()
-        .map(|dpv| ((dpv.start, dpv.end), dpv))
-        .collect();
+            let all_records: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+                .by_period(period, |_| true)
+                .into_iter()
+                .map(|dpv| ((dpv.start, dpv.end), dpv))
+                .collect();
 
-    let all_records = sort_map(all_records);
+            let all_records = sort_map(all_records);
 
-    let period_percentages: Vec<_> = all_records
-        .into_iter()
-        .map(|(dates, dpv)| {
-            let with_event_count: usize = with_events
-                .remove(&dates)
-                .map(|dpv| dpv.value.records.len())
-                .unwrap_or_default();
+            let period_percentages: Vec<_> = all_records
+                .into_iter()
+                .map(|(dates, dpv)| {
+                    let with_event_count: usize = with_events
+                        .remove(&dates)
+                        .map(|dpv| dpv.value.records.len())
+                        .unwrap_or_default();
 
-            let total_count = dpv.value.records.len();
+                    let total_count = dpv.value.records.len();
 
-            DatePeriodPercentage {
-                period: dpv.period,
-                start: dpv.start,
-                end: dpv.end,
-                value: if total_count == 0 {
-                    0.0
-                } else {
-                    with_event_count as f64 / total_count as f64 * 100.0
-                },
-            }
-        })
-        .collect();
+                    DatePeriodPercentage {
+                        period: dpv.period,
+                        start: dpv.start,
+                        end: dpv.end,
+                        value: if total_count == 0 {
+                            0.0
+                        } else {
+                            with_event_count as f64 / total_count as f64 * 100.0
+                        },
+                    }
+                })
+                .collect();
 
-    serde_json::to_string(&period_percentages)
-        .map_err(|_| JsValue::from_str("failed serializing view counts"))
+            serde_json::to_string(&period_percentages)
+                .map_err(|_| JsValue::from_str("failed serializing view counts"))
+        }
+        TimeseriesType::ComplicationSpecifiedCount => {
+            let view_counts = view.by_period(period, |record| record.complications.is_some());
+            let period_counts: Vec<_> = view_counts.into_iter().map(|vc| vc.to_count()).collect();
+            serde_json::to_string(&period_counts)
+                .map_err(|_| JsValue::from_str("failed serializing view counts"))
+        }
+        TimeseriesType::ComplicationSpecifiedPercentage => {
+            let mut with_complications: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+                .by_period(period, |record| record.complications.is_some())
+                .into_iter()
+                .map(|dpv| ((dpv.start, dpv.end), dpv))
+                .collect();
+
+            let all_records: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+                .by_period(period, |_| true)
+                .into_iter()
+                .map(|dpv| ((dpv.start, dpv.end), dpv))
+                .collect();
+
+            let all_records = sort_map(all_records);
+
+            let period_percentages: Vec<_> = all_records
+                .into_iter()
+                .map(|(dates, dpv)| {
+                    let with_complications_count: usize = with_complications
+                        .remove(&dates)
+                        .map(|dpv| dpv.value.records.len())
+                        .unwrap_or_default();
+
+                    let total_count = dpv.value.records.len();
+
+                    DatePeriodPercentage {
+                        period: dpv.period,
+                        start: dpv.start,
+                        end: dpv.end,
+                        value: if total_count == 0 {
+                            0.0
+                        } else {
+                            with_complications_count as f64 / total_count as f64 * 100.0
+                        },
+                    }
+                })
+                .collect();
+
+            serde_json::to_string(&period_percentages)
+                .map_err(|_| JsValue::from_str("failed serializing view counts"))
+        }
+        TimeseriesType::ComplicationOccurredCount => {
+            let view_counts = view.by_period(period, |record| record.complications == Some(true));
+            let period_counts: Vec<_> = view_counts.into_iter().map(|vc| vc.to_count()).collect();
+            serde_json::to_string(&period_counts)
+                .map_err(|_| JsValue::from_str("failed serializing view counts"))
+        }
+        TimeseriesType::ComplicationOccurredPercentage => {
+            let mut with_complications: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+                .by_period(period, |record| record.complications == Some(true))
+                .into_iter()
+                .map(|dpv| ((dpv.start, dpv.end), dpv))
+                .collect();
+
+            let all_records: HashMap<(NaiveDate, NaiveDate), DatePeriodView> = view
+                .by_period(period, |_| true)
+                .into_iter()
+                .map(|dpv| ((dpv.start, dpv.end), dpv))
+                .collect();
+
+            let all_records = sort_map(all_records);
+
+            let period_percentages: Vec<_> = all_records
+                .into_iter()
+                .map(|(dates, dpv)| {
+                    let with_complications_count: usize = with_complications
+                        .remove(&dates)
+                        .map(|dpv| dpv.value.records.len())
+                        .unwrap_or_default();
+
+                    let total_count = dpv.value.records.len();
+
+                    DatePeriodPercentage {
+                        period: dpv.period,
+                        start: dpv.start,
+                        end: dpv.end,
+                        value: if total_count == 0 {
+                            0.0
+                        } else {
+                            with_complications_count as f64 / total_count as f64 * 100.0
+                        },
+                    }
+                })
+                .collect();
+
+            serde_json::to_string(&period_percentages)
+                .map_err(|_| JsValue::from_str("failed serializing view counts"))
+        }
+    }
 }
 
 #[wasm_bindgen]

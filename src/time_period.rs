@@ -51,3 +51,33 @@ impl FromStr for Period {
         }
     }
 }
+
+pub enum TimeseriesType {
+    EventCount,
+    EventPercentage,
+    ComplicationSpecifiedCount,
+    ComplicationSpecifiedPercentage,
+    ComplicationOccurredCount,
+    ComplicationOccurredPercentage,
+}
+
+impl FromStr for TimeseriesType {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "event" => Ok(TimeseriesType::EventCount),
+            "eventPercentage" => Ok(TimeseriesType::EventPercentage),
+            "complicationSpecified" => Ok(TimeseriesType::ComplicationSpecifiedCount),
+            "complicationSpecifiedPercentage" => {
+                Ok(TimeseriesType::ComplicationSpecifiedPercentage)
+            }
+            "complicationOccurred" => Ok(TimeseriesType::ComplicationOccurredCount),
+            "complicationOccurredPercentage" => Ok(TimeseriesType::ComplicationOccurredPercentage),
+            x => Err(crate::Error::ParseError {
+                type_name: "TimeseriesType",
+                received: x.to_string(),
+            }),
+        }
+    }
+}

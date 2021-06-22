@@ -50,10 +50,10 @@ export const percentFormatter = new Intl.NumberFormat('en-US', {
 	maximumFractionDigits: 3,
 });
 
-export function number(s: number) {
+export function formatNumber(s: number) {
 	return numFormatter.format(s);
 }
 
-export function percent(s: number) {
+export function formatPercent(s: number) {
 	return percentFormatter.format(s);
 }

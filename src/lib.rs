@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 use zip::{result::ZipError, ZipArchive};
 
 use deserialize::{
-    comma_separated, hhmm_time, line_separated, mm_dd_yy_date, non_null_bool, FromCsv,
+    comma_separated, hhmm_time, line_separated, mm_dd_yy_date, non_null_bool, nullable_yes_no_bool,
+    FromCsv,
 };
 
 use std::{
@@ -438,6 +439,11 @@ pub struct AdverseEventRecord {
     pub anesthesia_staff: Vec<String>,
     #[serde(rename(deserialize = "Location"))]
     pub location: String,
+    #[serde(
+        rename(deserialize = "Anesthesia Complications"),
+        deserialize_with = "nullable_yes_no_bool::deserialize"
+    )]
+    pub complications: Option<bool>,
     #[serde(
         rename(deserialize = "Adverse Events"),
         deserialize_with = "comma_separated::deserialize"
