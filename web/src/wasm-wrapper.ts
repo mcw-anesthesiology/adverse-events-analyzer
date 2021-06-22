@@ -5,11 +5,7 @@
 // @ts-ignore
 import initialize from '../../wasm_wrapper/Cargo.toml';
 
-import {
-	parseDate,
-	fromLocalSecondsTimestamp,
-	toLocalSecondsTimestamp,
-} from './date-utils.js';
+import { parseDate, toISODate } from './date-utils.js';
 
 export interface AdverseEventRecord {
 	date: string;
@@ -36,10 +32,10 @@ export interface AdverseEventUtils {
 	event_counts: (handle: number) => string;
 	with_any_event: (handle: number) => number;
 	with_event: (handle: number, event: string) => number;
-	between: (handle: number, start: number, end: number) => number;
+	between: (handle: number, start: string, end: string) => number;
 	release_view: (handle: number) => number;
 	get_records: (handle: number, start?: number, length?: number) => string;
-	date_range: (handle: number) => Int32Array;
+	date_range: (handle: number) => string;
 	period_counts: (handle: number, period: string) => string;
 	period_percentages: (handle: number, period: string) => string;
 	get_breakdown: (handle: number, breakdownType: string) => string;
@@ -98,11 +94,7 @@ export async function between(
 ): Promise<number> {
 	const utils = await init;
 
-	return utils.between(
-		handle,
-		toLocalSecondsTimestamp(start),
-		toLocalSecondsTimestamp(end)
-	);
+	return utils.between(handle, toISODate(start), toISODate(end));
 }
 
 export async function releaseView(handle: number): Promise<number> {
@@ -121,12 +113,9 @@ export async function getRecords(
 
 export async function dateRange(handle: number): Promise<[Date, Date]> {
 	const utils = await init;
-	const [startTimestamp, endTimestamp] = utils.date_range(handle);
+	const [start, end] = JSON.parse(utils.date_range(handle));
 
-	return [
-		fromLocalSecondsTimestamp(startTimestamp),
-		fromLocalSecondsTimestamp(endTimestamp),
-	];
+	return [parseDate(start), parseDate(end)];
 }
 
 export enum Period {

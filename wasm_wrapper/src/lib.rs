@@ -1,4 +1,4 @@
-use chrono::{Local, NaiveDate, TimeZone};
+use chrono::NaiveDate;
 use lazy_static::lazy_static;
 use serde_json;
 use wasm_bindgen::prelude::*;
@@ -11,13 +11,15 @@ use adverse_events::{
 use std::{
     cell::{Cell, UnsafeCell},
     collections::HashMap,
-    convert::{From, TryInto},
+    convert::From,
     io::{BufReader, Cursor},
     str::FromStr,
     sync::Mutex,
 };
 
 type ViewHandle = u8;
+
+const ISO_DATE_FORMAT: &'static str = "%Y-%m-%d";
 
 lazy_static! {
     static ref RECORDS: Mutex<UnsafeCell<AdverseEvents>> =
@@ -134,11 +136,7 @@ pub fn with_event(handle: ViewHandle, event: &str) -> Result<ViewHandle, JsValue
 }
 
 #[wasm_bindgen]
-pub fn between(
-    handle: ViewHandle,
-    start_timestamp: i32,
-    end_timestamp: i32,
-) -> Result<ViewHandle, JsValue> {
+pub fn between(handle: ViewHandle, start: &str, end: &str) -> Result<ViewHandle, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -148,14 +146,10 @@ pub fn between(
         .get(&handle)
         .ok_or(JsValue::from_str("no view found for handle"))?;
 
-    let start = Local
-        .timestamp(start_timestamp.into(), 0)
-        .naive_local()
-        .date();
-    let end = Local
-        .timestamp(end_timestamp.into(), 0)
-        .naive_local()
-        .date();
+    let start = NaiveDate::parse_from_str(start, ISO_DATE_FORMAT)
+        .map_err(|_| JsValue::from_str("failed parsing start date"))?;
+    let end = NaiveDate::parse_from_str(end, ISO_DATE_FORMAT)
+        .map_err(|_| JsValue::from_str("failed parsing end date"))?;
 
     let new_view = view.between(start, end);
     let mut next_handle_lock = NEXT_HANDLE
@@ -224,7 +218,7 @@ pub fn get_records(
 }
 
 #[wasm_bindgen]
-pub fn date_range(handle: ViewHandle) -> Result<Box<[i32]>, JsValue> {
+pub fn date_range(handle: ViewHandle) -> Result<String, JsValue> {
     let mut map_cell = VIEW_MAP
         .lock()
         .map_err(|_| JsValue::from_str("could not acquire views"))?;
@@ -236,7 +230,8 @@ pub fn date_range(handle: ViewHandle) -> Result<Box<[i32]>, JsValue> {
 
     let (start, end) = view.date_range().ok_or(JsValue::from_str("no dates"))?;
 
-    Ok(Box::new([to_timestamp(start)?, to_timestamp(end)?]))
+    serde_json::to_string(&[start.to_string(), end.to_string()])
+        .map_err(|_| JsValue::from_str("failed serializing dates"))
 }
 
 #[wasm_bindgen]
@@ -328,13 +323,6 @@ pub fn get_breakdown(handle: ViewHandle, breakdown_type: &str) -> Result<String,
 
     serde_json::to_string(&view.get_breakdown(breakdown_type))
         .map_err(|_| JsValue::from_str("failed serializing view counts"))
-}
-
-fn to_timestamp(date: NaiveDate) -> Result<i32, JsValue> {
-    date.and_hms(0, 0, 0)
-        .timestamp()
-        .try_into()
-        .map_err(|_| JsValue::from_str("out of range timestamp"))
 }
 
 #[derive(Debug)]

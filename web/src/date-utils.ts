@@ -100,19 +100,3 @@ export function getAcademicYear(d: Date): [Date, Date] {
 
 	return [start, end];
 }
-
-export const timezoneOffsetMinutes = new Date().getTimezoneOffset();
-export const timezoneOffsetSeconds = timezoneOffsetMinutes * 60;
-export const timezoneOffsetMillis = timezoneOffsetSeconds * 1000;
-
-export function fromLocalSecondsTimestamp(seconds: number): Date {
-	return new Date(seconds * 1000 + timezoneOffsetMillis);
-}
-
-export function toUtcSecondsTimestamp(date: Date): number {
-	return date.valueOf() / 1000;
-}
-
-export function toLocalSecondsTimestamp(date: Date): number {
-	return toUtcSecondsTimestamp(date) - timezoneOffsetSeconds;
-}
