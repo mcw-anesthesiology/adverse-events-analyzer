@@ -17,6 +17,8 @@
 					<th>Diagnosis</th>
 					<th>Procedure</th>
 					<th>Anesthesiologist</th>
+					<th>Complications</th>
+					<th>Adverse events</th>
 					<th>Anesthesia staff</th>
 					<th>Location</th>
 					<th>ASA</th>
@@ -25,7 +27,6 @@
 					<th>Smoker</th>
 					<th>Age</th>
 					<th>BMI</th>
-					<th>Adverse events</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -38,6 +39,20 @@
 						<td>{record.diagnosis}</td>
 						<td>{record.procedure}</td>
 						<td>{record.anesthesiologist}</td>
+						<td>
+							{#if record.complications}
+								Yes
+							{:else if record.complications !== null}
+								No
+							{/if}
+						</td>
+						<td>
+							<ul>
+								{#each record.adverseEvents as event}
+									<li>{event}</li>
+								{/each}
+							</ul>
+						</td>
 						<td>
 							<ul>
 								{#each record.anesthesiaStaff as staffMember}
@@ -56,13 +71,6 @@
 						</td>
 						<td>{record.age}</td>
 						<td>{record.bmi}</td>
-						<td>
-							<ul>
-								{#each record.adverseEvents as event}
-									<li>{event}</li>
-								{/each}
-							</ul>
-						</td>
 					</tr>
 				{/each}
 			</tbody>
