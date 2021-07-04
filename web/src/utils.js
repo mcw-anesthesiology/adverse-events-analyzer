@@ -28,7 +28,7 @@ export async function printElement(
 	});
 	styles.push({ content: `html#printer main { padding: 0 1em; }` });
 
-	return fetch(import.meta.env.PRINTER_ENDPOINT, {
+	return fetch(import.meta.env.VITE_PRINTER_ENDPOINT, {
 		method: 'POST',
 		body: JSON.stringify({
 			body,

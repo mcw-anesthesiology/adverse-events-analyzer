@@ -17,7 +17,7 @@
 	</div>
 </div>
 
-<script lang="typescript">
+<script lang="ts">
 	import { schemeSet1, schemeSet2, schemeSet3, schemeTableau10 } from 'd3-scale-chromatic';
 
 	import Chart from './FrappeChart.svelte';

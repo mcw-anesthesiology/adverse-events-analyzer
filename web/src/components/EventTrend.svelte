@@ -41,7 +41,7 @@
 	<Chart type="line" {data} {axisOptions} {lineOptions} bind:this={chart} />
 </div>
 
-<script lang="typescript">
+<script lang="ts">
 	import Chart from './FrappeChart.svelte';
 
 	import { formatShortDate } from '../formatters.js';

@@ -23,7 +23,7 @@
 	</tbody>
 </table>
 
-<script lang="typescript">
+<script lang="ts">
 	import { getContext } from 'svelte';
 
 	export let counts: Map<string, number>;

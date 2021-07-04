@@ -17,7 +17,7 @@
 	</div>
 </section>
 
-<script lang="typescript">
+<script lang="ts">
 	import Chart from './FrappeChart.svelte';
 
 	import { BreakdownType, getBreakdown } from '../wasm-wrapper.js';

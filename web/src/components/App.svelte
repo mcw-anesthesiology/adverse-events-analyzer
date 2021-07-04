@@ -56,9 +56,6 @@
 	import { inputFile } from '../stores.js';
 	import { init } from '../wasm-wrapper.js';
 
-	import '../anet.css';
-	import '../global.css';
-
 	let loading = false;
 	let dataLoaded = false;
 	let loadingError;

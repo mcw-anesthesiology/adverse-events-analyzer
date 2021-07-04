@@ -102,7 +102,7 @@
 	</Tabs>
 </div>
 
-<script lang="typescript">
+<script lang="ts">
 	import { setContext } from 'svelte';
 	import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs';
 
