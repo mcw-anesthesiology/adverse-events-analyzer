@@ -19,7 +19,7 @@ use std::{
 
 type ViewHandle = u8;
 
-const ISO_DATE_FORMAT: &'static str = "%Y-%m-%d";
+const ISO_DATE_FORMAT: &str = "%Y-%m-%d";
 
 lazy_static! {
     static ref RECORDS: Mutex<UnsafeCell<AdverseEvents>> =
