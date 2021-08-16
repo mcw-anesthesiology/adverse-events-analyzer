@@ -8,6 +8,10 @@
 		</label>
 
 		<PrintButton target={chunksContainer} filename="Event counts.pdf" options={printOptions} />
+
+		<button type="button" on:click={handleScreenshot}>
+			Save image
+		</button>
 	</div>
 
 	<div bind:this={chunksContainer} class="chunks-container" class:small={numChunks > 2}>
@@ -19,6 +23,8 @@
 
 <script lang="ts">
 	import { schemeSet1, schemeSet2, schemeSet3, schemeTableau10 } from 'd3-scale-chromatic';
+	import html2Canvas from 'html2canvas';
+	import download from 'downloadjs';
 
 	import Chart from './FrappeChart.svelte';
 	import EventCountTable from './EventCountTable.svelte';
@@ -77,6 +83,16 @@
 	const printOptions = {
 		printBackground: true
 	};
+
+	async function handleScreenshot() {
+		try {
+			const canvas = await html2Canvas(chunksContainer);
+			const png = canvas.toDataURL();
+			download(png, 'Event counts.png', 'image/png');
+		} catch (err) {
+			console.error(err);
+		}
+	}
 </script>
 
 <style>
