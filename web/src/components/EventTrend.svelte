@@ -38,7 +38,7 @@
 		</fieldset>
 	</div>
 
-	<Chart type="line" {data} {axisOptions} {lineOptions} bind:this={chart} />
+	<Chart type="line" {data} title={getTitle(viewType)} {axisOptions} {lineOptions} bind:this={chart} />
 </div>
 
 <script lang="ts">
@@ -84,6 +84,17 @@
 	const lineOptions = {
 		hideDots: true
 	};
+
+	function getTitle(viewType: TimeseriesType) {
+		switch (viewType) {
+			case TimeseriesType.EventCount: return 'Number of events';
+			case TimeseriesType.EventPercentage: return 'Percentage of events';
+			case TimeseriesType.ComplicationSpecifiedCount: return 'Number of complication button presses';
+			case TimeseriesType.ComplicationSpecifiedPercentage: return 'Percentage of cases with complication button presses';
+			case TimeseriesType.ComplicationOccurredCount: return 'Number of cases with complications';
+			case TimeseriesType.ComplicationOccurredPercentage: return 'Percentage of cases with complications';
+		}
+	}
 </script>
 
 <style>
