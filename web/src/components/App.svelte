@@ -30,7 +30,7 @@
 						</small>
 					</span>
 
-					<input type="file" name="archive" accept=".zip" on:input={handleArchiveChange} disabled={loading} />
+					<input type="file" name="archive" accept=".zip,.csv" on:input={handleArchiveChange} disabled={loading} />
 				</label>
 			</form>
 

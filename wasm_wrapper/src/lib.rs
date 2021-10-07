@@ -12,7 +12,7 @@ use std::{
     cell::{Cell, UnsafeCell},
     collections::HashMap,
     convert::From,
-    io::{BufReader, Cursor},
+    io::{BufReader, Cursor, Seek, SeekFrom},
     str::FromStr,
     sync::Mutex,
 };
@@ -30,11 +30,15 @@ lazy_static! {
 }
 
 #[wasm_bindgen]
-pub fn get_events(zip_data: &[ViewHandle]) -> Result<ViewHandle, JsValue> {
-    let cursor = Cursor::new(zip_data);
-    let buf = BufReader::new(cursor);
-    let adverse_events =
-        AdverseEvents::from_zip(buf).map_err(|e| JsValue::from_str(&format!("{:?}", e)))?;
+pub fn get_events(data: &[u8]) -> Result<ViewHandle, JsValue> {
+    let cursor = Cursor::new(data);
+    let mut buf = BufReader::new(cursor);
+    let adverse_events = AdverseEvents::from_zip(&mut buf)
+        .or_else(|_| {
+            buf.seek(SeekFrom::Start(0))?;
+            AdverseEvents::from_csv_reader(&mut buf)
+        })
+        .map_err(|e| JsValue::from_str(&format!("{:?}", e)))?;
 
     let mut map_cell = VIEW_MAP
         .lock()
