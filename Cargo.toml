@@ -6,12 +6,21 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["gen-fake"]
+gen-fake = ["fake", "rand"]
+
 [dependencies]
 chrono = { version = "0.4.19", features = ["serde"] }
 csv = "1.1.6"
 serde = { version = "1.0.126", features = ["derive"] }
-deserialize = { path = "../deserialize" }
 clap = "2.33.3"
+fake = { version = "2.4.1", optional = true, features = ["derive", "chrono"] }
+rand = { version = "0.8.4", optional = true }
+
+[dependencies.deserialize]
+path = "../deserialize"
+# git = "https://github.com/mcw-anesthesiology/deserialize.git"
 
 [dependencies.zip]
 version = "0.5.12"

@@ -1,5 +1,13 @@
 use chrono::{Datelike, Duration, NaiveDate, NaiveTime, Weekday};
 use csv;
+#[cfg(feature = "gen-fake")]
+use fake::{
+    faker::{
+        lorem::en::{Word, Words},
+        name::en::Name,
+    },
+    Dummy, Fake,
+};
 use serde::{Deserialize, Serialize};
 use zip::{result::ZipError, ZipArchive};
 
@@ -12,7 +20,7 @@ use std::{
     collections::HashMap,
     convert::From,
     fmt, hash,
-    io::{Read, Seek},
+    io::{self, Read, Seek},
 };
 
 mod breakdown;
@@ -428,65 +436,82 @@ where
     map
 }
 
-#[derive(Serialize, Deserialize)]
+#[cfg(feature = "gen-fake")]
+mod gen_fake {
+    use super::*;
+    use rand::Rng;
+
+    pub(super) struct DateWithinYears(pub i32);
+
+    impl Dummy<DateWithinYears> for NaiveDate {
+        fn dummy_with_rng<R: Rng + ?Sized>(rd: &DateWithinYears, rng: &mut R) -> NaiveDate {
+            let year = rng.gen_range((2020 - rd.0)..=2020);
+            let month = rng.gen_range(1..=12);
+            let day = rng.gen_range(
+                1..=match month {
+                    2 => 28,
+                    9 | 4 | 6 | 11 => 30,
+                    _ => 31,
+                },
+            );
+
+            NaiveDate::from_ymd(year, month, day)
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "gen-fake", derive(Dummy))]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct AdverseEventRecord {
-    #[serde(
-        rename(deserialize = "Date"),
-        deserialize_with = "mm_dd_yy_date::deserialize"
-    )]
+    #[serde(rename(deserialize = "Date"), with = "mm_dd_yy_date")]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "gen_fake::DateWithinYears(2)"))]
     pub date: NaiveDate,
     #[serde(rename(deserialize = "MRN"))]
     pub mrn: String,
     #[serde(rename(deserialize = "Episode ID"))]
     pub episode_id: String,
     #[serde(rename(deserialize = "Patient Name"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "Name()"))]
     pub patient_name: String,
     #[serde(rename(deserialize = "Diagnosis"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "Word()"))]
     pub diagnosis: String,
     #[serde(rename(deserialize = "Procedure"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "Word()"))]
     pub procedure: String,
     #[serde(rename(deserialize = "Anesthesiologist"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "Name()"))]
     pub anesthesiologist: String,
-    #[serde(
-        rename(deserialize = "Anesthesia Staff"),
-        deserialize_with = "line_separated::deserialize"
-    )]
+    #[serde(rename(deserialize = "Anesthesia Staff"), with = "line_separated")]
     pub anesthesia_staff: Vec<String>,
     #[serde(rename(deserialize = "Location"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "Word()"))]
     pub location: String,
     #[serde(
         rename(deserialize = "Anesthesia Complications"),
-        deserialize_with = "nullable_yes_no_bool::deserialize"
+        with = "nullable_yes_no_bool"
     )]
     pub complications: Option<bool>,
-    #[serde(
-        rename(deserialize = "Adverse Events"),
-        deserialize_with = "comma_separated::deserialize"
-    )]
+    #[serde(rename(deserialize = "Adverse Events"), with = "comma_separated")]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "Words(0..5)"))]
     pub adverse_events: Vec<String>,
     #[serde(rename(deserialize = "ASA"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "0..=5"))]
     pub asa: u8,
 
-    #[serde(
-        rename(deserialize = "An Start"),
-        deserialize_with = "hhmm_time::deserialize"
-    )]
+    #[serde(rename(deserialize = "An Start"), with = "hhmm_time")]
     pub an_start: NaiveTime,
-    #[serde(
-        rename(deserialize = "An Stop"),
-        deserialize_with = "hhmm_time::deserialize"
-    )]
+    #[serde(rename(deserialize = "An Stop"), with = "hhmm_time")]
     pub an_stop: NaiveTime,
 
-    #[serde(
-        rename(deserialize = "Smoker?"),
-        deserialize_with = "non_null_bool::deserialize"
-    )]
+    #[serde(rename(deserialize = "Smoker?"), with = "non_null_bool")]
     pub smoker: bool,
     #[serde(rename(deserialize = "Age (Years)"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "0..120"))]
     pub age: u8,
     #[serde(rename(deserialize = "BMI"))]
+    #[cfg_attr(feature = "gen-fake", dummy(faker = "10.0..40.0"))]
     pub bmi: f64,
 }
 
@@ -496,6 +521,7 @@ impl FromCsv for AdverseEventRecord {}
 pub enum Error {
     DecompressError(ZipError),
     CsvError(csv::Error),
+    IoError(io::Error),
     ParseError {
         type_name: &'static str,
         received: String,
@@ -511,6 +537,12 @@ impl From<ZipError> for Error {
 impl From<csv::Error> for Error {
     fn from(e: csv::Error) -> Self {
         Error::CsvError(e)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Error::IoError(e)
     }
 }
 
