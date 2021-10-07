@@ -53,9 +53,19 @@ As it mentions in the footer of the page, this app relies heavily on modern
 browser features to make navigating such a large data set quick, so please use
 a modern browser like Chrome or Edge.
 
+Fake data can be generated using the `gen_fake` binary in the crate root. CSV
+is sent to stdout, and the number of records can be specified as the first
+argument (default 10,000).
+
+`cargo run --bin gen_fake -- 100000 > fake.csv`
+
 ## Building
 
-The crate depends on the
+The app is built from the `web` directory. `npm install && npm dev` will start
+the Vite development server. The WebAssembly module in `wasm_wrapper` will be
+built using the Rust build tool `cargo`, which must be installed.
+
+The root crate depends on the
 [deserialize](https://github.com/mcw-anesthesiology/deserialize) crate, by
 default configured to be in the path `../deserialize` for workspace reasons.
 The easiest way to rectify this is to uncomment the `git` dependency in
@@ -65,9 +75,3 @@ The easiest way to rectify this is to uncomment the `git` dependency in
 [dependencies.deserialize]
 git = "https://github.com/mcw-anesthesiology/deserialize.git"
 ```
-
-Fake data can be generated using the `gen_fake` binary in the crate root. CSV
-is sent to stdout, and the number of records can be specified as the first
-argument (default 10,000).
-
-`cargo run --bin gen_fake -- 100000 > fake.csv`
