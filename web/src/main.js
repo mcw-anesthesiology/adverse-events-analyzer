@@ -1,3 +1,5 @@
 import { createApp } from './app.js';
+import { registerSW } from 'virtual:pwa-register';
 
-createApp(document.body);
+createApp(document.getElementById('app'));
+registerSW();

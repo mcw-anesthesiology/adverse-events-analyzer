@@ -41,13 +41,6 @@
 			{/if}
 		{/if}
 	</main>
-
-	<footer>
-		<p>
-			This site requires modern browser features.
-			Please use an updated version of Firefox, Chrome, Edge, or Safari.
-		</p>
-	</footer>
 </section>
 
 <script>
@@ -108,7 +101,6 @@
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
-		min-height: 100vh;
 	}
 
 	header {
@@ -130,11 +122,6 @@
 
 	main {
 		flex-grow: 1;
-		padding: 1em;
-	}
-
-	footer {
-		color: #555;
 		padding: 1em;
 	}
 
