@@ -464,7 +464,14 @@ mod gen_fake {
 #[cfg_attr(feature = "gen-fake", derive(Dummy))]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct AdverseEventRecord {
-    #[serde(rename(deserialize = "Date"), with = "mm_dd_yy_date")]
+    #[serde(
+        rename(deserialize = "Date"),
+        deserialize_with = "mm_dd_yy_date::deserialize"
+    )]
+    #[cfg_attr(
+        feature = "gen-fake",
+        serde(serialize_with = "mm_dd_yy_date::serialize")
+    )]
     #[cfg_attr(feature = "gen-fake", dummy(faker = "gen_fake::DateWithinYears(2)"))]
     pub date: NaiveDate,
     #[serde(rename(deserialize = "MRN"))]
@@ -483,29 +490,62 @@ pub struct AdverseEventRecord {
     #[serde(rename(deserialize = "Anesthesiologist"))]
     #[cfg_attr(feature = "gen-fake", dummy(faker = "Name()"))]
     pub anesthesiologist: String,
-    #[serde(rename(deserialize = "Anesthesia Staff"), with = "line_separated")]
+    #[serde(
+        rename(deserialize = "Anesthesia Staff"),
+        deserialize_with = "line_separated::deserialize"
+    )]
+    #[cfg_attr(
+        feature = "gen-fake",
+        serde(serialize_with = "line_separated::serialize")
+    )]
     pub anesthesia_staff: Vec<String>,
     #[serde(rename(deserialize = "Location"))]
     #[cfg_attr(feature = "gen-fake", dummy(faker = "Word()"))]
     pub location: String,
     #[serde(
         rename(deserialize = "Anesthesia Complications"),
-        with = "nullable_yes_no_bool"
+        deserialize_with = "nullable_yes_no_bool::deserialize"
+    )]
+    #[cfg_attr(
+        feature = "gen-fake",
+        serde(serialize_with = "nullable_yes_no_bool::serialize")
     )]
     pub complications: Option<bool>,
-    #[serde(rename(deserialize = "Adverse Events"), with = "comma_separated")]
+    #[serde(
+        rename(deserialize = "Adverse Events"),
+        deserialize_with = "comma_separated::deserialize"
+    )]
+    #[cfg_attr(
+        feature = "gen-fake",
+        serde(serialize_with = "comma_separated::serialize")
+    )]
     #[cfg_attr(feature = "gen-fake", dummy(faker = "Words(0..5)"))]
     pub adverse_events: Vec<String>,
     #[serde(rename(deserialize = "ASA"))]
     #[cfg_attr(feature = "gen-fake", dummy(faker = "0..=5"))]
     pub asa: u8,
 
-    #[serde(rename(deserialize = "An Start"), with = "hhmm_time")]
+    #[serde(
+        rename(deserialize = "An Start"),
+        deserialize_with = "hhmm_time::deserialize"
+    )]
+    #[cfg_attr(feature = "gen-fake", serde(serialize_with = "hhmm_time::serialize"))]
     pub an_start: NaiveTime,
-    #[serde(rename(deserialize = "An Stop"), with = "hhmm_time")]
+    #[serde(
+        rename(deserialize = "An Stop"),
+        deserialize_with = "hhmm_time::deserialize"
+    )]
+    #[cfg_attr(feature = "gen-fake", serde(serialize_with = "hhmm_time::serialize"))]
     pub an_stop: NaiveTime,
 
-    #[serde(rename(deserialize = "Smoker?"), with = "non_null_bool")]
+    #[serde(
+        rename(deserialize = "Smoker?"),
+        deserialize_with = "non_null_bool::deserialize"
+    )]
+    #[cfg_attr(
+        feature = "gen-fake",
+        serde(serialize_with = "non_null_bool::serialize")
+    )]
     pub smoker: bool,
     #[serde(rename(deserialize = "Age (Years)"))]
     #[cfg_attr(feature = "gen-fake", dummy(faker = "0..120"))]

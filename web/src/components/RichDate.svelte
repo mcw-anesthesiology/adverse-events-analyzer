@@ -1,4 +1,4 @@
-<time datetime={dateObj.toISOString()}>
+<time datetime={dateObj?.toISOString()}>
 	{applyDateFormatter(dateObj, formatter)}
 </time>
 
